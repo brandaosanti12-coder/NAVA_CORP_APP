@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVA CORP - Ecosistema Empresarial</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/tema.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+/* ===== BIENVENIDA ITSACOURIER + RETORNO A LA WEB (NAVA CORP) ===== */
+.btn-volver-web{position:absolute;top:22px;right:26px;z-index:50;display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:10px;border:1px solid var(--nava-cyan);color:var(--nava-cyan);
+  background:rgba(28,35,49,.6);text-decoration:none;font-family:'Montserrat',sans-serif;font-weight:700;
+  font-size:11px;text-transform:uppercase;letter-spacing:1px;transition:.3s;}
+.btn-volver-web:hover{background:rgba(0,229,255,.12);box-shadow:0 0 15px rgba(0,229,255,.4);transform:translateY(-2px);}
+
+.welcome-box{text-align:center;margin-bottom:38px;}
+.welcome-eyebrow{display:inline-block;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--nava-cyan);border:1px solid var(--border-color);background:rgba(0,0,0,.35);
+  padding:7px 14px;border-radius:20px;margin-bottom:18px;}
+.welcome-empresa{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--nava-electric-light),var(--nava-cyan));-webkit-background-clip:text;background-clip:text;
+  color:transparent;line-height:1.1;margin-bottom:10px;}
+.welcome-sub{color:var(--text-muted);font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;}
+
+.powered-by{margin-top:30px;text-align:center;color:var(--text-muted);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+.powered-by b{color:var(--nava-cyan);}
+.powered-by a{color:var(--text-muted);text-decoration:none;border-bottom:1px dotted var(--border-color);}
+.powered-by a:hover{color:var(--nava-cyan);}
+
+@media(max-width:820px){
+  .btn-volver-web{top:14px;right:14px;padding:8px 12px;font-size:10px;}
+  .welcome-empresa{font-size:2rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PANTALLA DE INICIO ================= -->
+<div id="pantalla-inicio" class="split-layout">
+    <div class="left-side">
+        <div class="logo-container-main">
+            <img src="img/logo.png" alt="NAVA CORP Logo" class="logo-gigante">
+        </div>
+        <div class="footer-legend">
+            <p>DESIGNED BY NAVA CORP</p>
+            <img src="img/firma-nava.jpeg" alt="Firma Brandon Navarrete" class="firma-autor">
+        </div>
+    </div>
+    
+    <div class="right-side">
+        <a href="../../index.html" class="btn-volver-web" title="Regresar al sitio web"><i class="fas fa-arrow-left-long"></i> Volver a la Web</a>
+
+        <div class="welcome-box">
+            <span class="welcome-eyebrow">Bienvenido al Sistema de Gestión</span>
+            <h1 class="welcome-empresa">ITSACOURIER</h1>
+            <p class="welcome-sub">Control de personal, asistencia y reportes en tiempo real</p>
+        </div>
+
+        <div class="menu-botones" style="align-items: center;">
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 10px; width: 100%; text-align: left;">Ingrese su cédula para acceder:</p>
+            <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 15px;">
+                <input type="number" id="login-cedula" placeholder="Ej: 0999999999" class="input-dark" style="flex: 1; margin: 0;">
+                <button class="btn-primary" onclick="loginEmpleado()" style="padding: 12px 20px;"><i class="fas fa-sign-in-alt"></i> Acceder</button>
+            </div>
+            
+            <button class="btn-menu btn-admin-trigger" onclick="abrirModalAuth()" style="width: 100%;"><i class="fas fa-lock"></i> Panel de Control (Admin)</button>
+        </div>
+
+        <p class="powered-by">Desarrollado por <b>NAVA CORP</b> · <a href="../../index.html">Ver sitio web</a></p>
+    </div>
+</div>
+
+<!-- ================= CONTENEDOR DE APLICACIONES ================= -->
+<div id="app-container" style="display: none; width: 100%; height: 100vh;">
+    
+    <button id="btn-volver-global" class="btn-volver" onclick="volverInicio()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
+
+<!-- VISTA 0: DASHBOARD DEL EMPLEADO LOGUEADO -->
+    <section id="view-dashboard-empleado" class="view-section" style="display: none;">
+        <div class="box glass-card" style="max-width: 450px; width: 100%; position: relative;">
+            
+            <!-- Botón de Cerrar Sesión (Regresar) -->
+            <button class="btn-volver" onclick="cerrarSesionEmpleado()" style="position: absolute; top: 15px; left: 15px; color: var(--nava-silver); background: transparent; border: none; font-size: 13px; font-weight: bold; cursor: pointer;">
+                <i class="fas fa-arrow-left"></i> Cerrar Sesión
+            </button>
+            
+            <img src="img/logo.png" alt="Logo NAVA" class="logo" style="margin-top: 20px;">
+            <h2 style="color: var(--nava-cyan); margin-bottom: 5px; font-size: 18px;">Bienvenido/a</h2>
+            <h3 id="dash-nombre-empleado" style="color: var(--text-main); margin-bottom: 30px; text-transform: uppercase; font-size: 20px;">NOMBRE</h3>
+            
+            <div class="menu-botones" style="margin: 0 auto; width: 100%;">
+                <button class="btn-menu" onclick="navegar('view-asistencia')">
+                    <i class="fas fa-fingerprint"></i> ASISTENCIA (ENTRADA / SALIDA)
+                </button>
+
+                <!-- CONTENEDOR DINÁMICO DE ALMUERZO -->
+                <div id="contenedor-almuerzo-empleado" style="margin-top: 10px;">
+                    <!-- JS inyectará aquí el botón, el cronómetro o el resumen -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- ================= MODAL FLOTANTE: INGRESO DE TOKEN ================= -->
+<div id="modal-token-almuerzo" class="modal-overlay" style="display: none; z-index: 1200;">
+    <div class="modal-caja glass-card" style="max-width: 400px; width: 95%;">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3 id="titulo-token-almuerzo" style="color: var(--warning); margin: 0;"><i class="fas fa-key"></i> Validación</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-token-almuerzo')">×</button>
+        </div>
+        <p id="desc-token-almuerzo" style="color: var(--text-muted); margin-top: 10px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">Ingrese el token.</p>
+        
+        <input type="number" id="input-token-almuerzo" placeholder="123456" class="input-dark" style="font-size: 28px; letter-spacing: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; color: var(--nava-cyan);">
+        
+        <button id="btn-validar-token" class="btn-primary" style="width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);" onclick="validarTokenYRegistrar()">
+            Validar y Registrar
+        </button>
+    </div>
+</div>
+
+    <!-- VISTA 1: SALIDA ALMUERZO -->
+    <section id="view-salida-almuerzo" class="view-section" style="display: none;">
+        <div class="box glass-card" id="contenedorPrincipalSalida">
+            <img src="img/logo.png" alt="Logo NAVA" class="logo">
+            <h2 style="color: var(--nava-cyan);">Salida Almuerzo</h2>
+            <div class="form-group">
+                <label for="area-salida">Área de trabajo</label>
+                <select id="area-salida" onchange="cargarEmpleadosAlm('salida')">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="PLAYA">PLAYA</option>
+                    <option value="FACTURACION">FACTURACIÓN</option>
+                    <option value="OFICINA">OFICINA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nombre-salida">Nombre del empleado</label>
+                <select id="nombre-salida" onchange="verEstadoSalida()">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+            </div>
+            <button id="salidaBtn" class="btn-primary" style="width: 100%;" onclick="registrarSalida()">Registrar Salida</button>
+            <div class="status-area">
+                <p id="horaSalida" style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px; font-weight: 500;"></p>
+                <p id="timer" class="timer" style="font-size: 32px; font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums;"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISTA 2: RETORNO ALMUERZO -->
+    <section id="view-retorno-almuerzo" class="view-section" style="display: none;">
+        <div class="box glass-card" id="contenedorPrincipalRetorno">
+            <img src="img/logo.png" alt="Logo NAVA" class="logo">
+            <h2 style="color: var(--success);">Retorno Almuerzo</h2>
+            <div class="form-group">
+                <label for="area-retorno">Área de trabajo</label>
+                <select id="area-retorno" onchange="cargarEmpleadosAlm('retorno')">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="PLAYA">PLAYA</option>
+                    <option value="FACTURACION">FACTURACIÓN</option>
+                    <option value="OFICINA">OFICINA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nombre-retorno">Nombre del empleado</label>
+                <select id="nombre-retorno" onchange="verEstadoRetorno()">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+            </div>
+            <button id="retornoBtn" class="btn-success" style="width: 100%;" onclick="registrarRetorno()">Registrar Retorno</button>
+            <div class="status-area" id="resultado-retorno" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 18px;"></div>
+        </div>
+    </section>
+
+    <!-- VISTA 3: ASISTENCIA BIOMÉTRICA -->
+    <section id="view-asistencia" class="view-section" style="display: none;">
+        <div class="box glass-card" style="max-width: 450px; width: 100%;">
+            <img src="img/logo.png" alt="Logo NAVA" class="logo">
+            <h2 style="color: var(--text-main); margin-bottom: 20px;">Registro de Asistencia</h2>
+            
+            <!-- La cédula ahora es un campo OCULTO que guarda la sesión -->
+            <input type="hidden" id="cedula">
+
+            <!-- Panel de información visible desde que entra -->
+            <div style="text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--nava-cyan);">
+                <p style="margin-bottom: 4px;"><strong>Nombre:</strong> <span id="txt-nombre" style="color: var(--text-main);"></span></p>
+                <p style="margin-bottom: 4px;"><strong>Cédula:</strong> <span id="txt-cedula" style="color: var(--nava-silver);"></span></p>
+                <p style="margin-bottom: 4px;"><strong>Ciudad:</strong> <span id="txt-ciudad" style="color: var(--nava-silver);"></span></p>
+                <p style="font-size:12px; color:var(--text-muted); margin-top: 8px;">Horario asignado: <span id="txt-horario-asignado" style="color:var(--warning);"></span></p>
+            </div>
+
+            <!-- Botones intactos -->
+            <button id="btn-entrada" class="btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="procesarMarcacion('entrada')">Marcar Entrada</button>
+            <button id="btn-salida-bio" class="btn-danger" style="width: 100%; margin-bottom: 15px; display: none;" onclick="procesarMarcacion('salida')">Marcar Salida</button>
+
+            <!-- Datos de los registros (se muestran al marcar) --> 
+            <div id="info-registros" style="display: none; text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 3px solid var(--nava-electric-blue);">
+                <p style="margin-bottom: 4px;"><strong>Entrada:</strong> <span id="txt-hora-entrada"></span></p>
+                <p id="caja-atraso" class="dato-oculto alerta-roja" style="margin-bottom: 4px;"><strong>Atraso:</strong> <span id="txt-atraso"></span></p>
+                <p style="margin-bottom: 4px;"><strong>Ubicación Entrada:</strong> <span id="txt-ubicacion-entrada">Pendiente...</span></p>
+                
+                <div id="datos-salida" class="dato-oculto">
+                    <hr style="border-color: var(--border-color); margin: 10px 0;">
+                    <p style="margin-bottom: 4px;"><strong>Salida:</strong> <span id="txt-hora-salida"></span></p>
+                    <p style="margin-bottom: 4px;"><strong>Ubicación Salida:</strong> <span id="txt-ubicacion-salida">Pendiente...</span></p>
+                    <p style="margin-bottom: 4px;"><strong>Tiempo Trabajado:</strong> <span id="txt-trabajado"></span></p>
+                    <p id="caja-extras" class="dato-oculto alerta-verde" style="margin-bottom: 4px;"><strong>Horas Extras:</strong> <span id="txt-extras"></span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- VISTA EXCLUSIVA: INGRESO DE TOKEN DE ALMUERZO -->
+<section id="view-token-almuerzo" class="view-section" style="display: none;">
+    <div class="box glass-card" style="max-width: 450px; width: 100%;">
+        <img src="img/logo.png" alt="Logo NAVA" class="logo">
+        <h2 id="titulo-token-almuerzo" style="color: var(--warning); margin-bottom: 15px;">Validación de Almuerzo</h2>
+        <p id="desc-token-almuerzo" style="color: var(--text-muted); margin-bottom: 25px;">Ingrese el token dinámico que se muestra en la pantalla principal de la oficina.</p>
+        
+        <input type="number" id="input-token-almuerzo" placeholder="Ej: 123456" class="input-dark" style="font-size: 28px; letter-spacing: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; color: var(--nava-cyan);">
+        
+        <button id="btn-validar-token" class="btn-primary" style="width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);" onclick="validarTokenYRegistrar()">
+            Validar y Registrar
+        </button>
+    </div>
+</section>
+
+    <!-- VISTA 4: PANEL DE ADMINISTRADOR FULL SCREEN -->
+    <section id="view-admin" class="view-section" style="display: none; padding: 0;">
+        <div class="admin-layout">
+            
+            <!-- Barra Lateral -->
+            <aside class="admin-sidebar glass-card">
+                <button class="btn-volver-admin" onclick="volverInicio()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
+                <div class="sidebar-logo">
+                    <img src="img/logo.png" alt="Logo NAVA CORP" class="logo" style="margin-bottom: 10px;">
+                    <h2 style="font-size: 16px; text-align: center; color: var(--text-main); letter-spacing: 1px;">PANEL DE CONTROL</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <button id="nav-almuerzos" class="nav-btn active" onclick="switchAdminTab('almuerzos')"><i class="fas fa-utensils"></i> Módulo Almuerzos</button>
+                    <button id="nav-asistencia" class="nav-btn" onclick="switchAdminTab('asistencia')"><i class="fas fa-fingerprint"></i> Módulo Asistencia</button>
+                </nav>
+            </aside>
+            
+            <!-- Contenido Principal -->
+            <main class="admin-main">
+                <header class="admin-header glass-card" style="padding: 15px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px;">
+                    <h2 id="admin-module-title" style="color: var(--nava-cyan); font-size: 18px; margin: 0;"><i class="fas fa-utensils"></i> Gestión de Almuerzos</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="window.open('generador-tokens.html', '_blank')" style="margin: 0;" title="Abrir Generador de Tokens">
+                            <i class="fas fa-stopwatch"></i> Generar Token
+                        </button>
+                        <button class="btn-cancel" onclick="abrirModalCambiarPassword()" style="display: flex; align-items: center; gap: 8px; margin: 0;" title="Cambiar Contraseña">
+                            <i class="fas fa-key" style="color: var(--warning);"></i> Cambiar Clave
+                        </button>
+                    </div>
+                </header>
+
+                <!-- TAB 1: ALMUERZOS -->
+                <div id="tab-almuerzos" class="admin-tab active glass-card" style="padding: 25px; border-radius: 12px;">
+                    <div class="actions-bar" style="display: flex; gap: 15px; margin-bottom: 25px;">
+                        <button class="btn-outline" onclick="abrirModalAlmuerzos()"><i class="fas fa-users"></i> Gestión de Personal</button>
+                        <button class="btn-export" onclick="exportarAlmuerzos()"><i class="fas fa-file-excel"></i> Exportar Almuerzos</button>
+                    </div>
+
+                    <div style="margin-bottom: 35px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                            <h3 style="color: var(--nava-silver); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Monitor de Almuerzos (Hoy)</h3>
+                            <button class="btn-cancel" style="padding: 4px 10px; font-size: 11px;" onclick="inicializarDashboardAlmuerzos()" title="Actualizar Datos"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                        </div>
+                        
+                        <div class="dashboard-grid">
+                            <div class="status-card pendientes">
+                                <div class="status-header"><h3 style="color:var(--nava-electric-light);"><i class="fas fa-clock"></i> Pendientes</h3><span class="status-count" id="count-pendientes">0</span></div>
+                                <ul class="status-list" id="list-pendientes"></ul>
+                            </div>
+                            <div class="status-card en-almuerzo">
+                                <div class="status-header"><h3 style="color:var(--warning);"><i class="fas fa-running"></i> En Almuerzo</h3><span class="status-count" style="color:var(--warning); background:rgba(255,234,0,0.1);" id="count-almuerzo">0</span></div>
+                                <ul class="status-list" id="list-almuerzo"></ul>
+                            </div>
+                            <div class="status-card completados">
+                                <div class="status-header"><h3 style="color:var(--success);"><i class="fas fa-check-double"></i> Completados</h3><span class="status-count" style="color:var(--success); background:rgba(0,230,118,0.1);" id="count-completados">0</span></div>
+                                <ul class="status-list" id="list-completados"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-section">
+                        <h3 style="margin-bottom: 15px; color: var(--nava-cyan); font-size: 15px;"><i class="fas fa-search"></i> Historial de Almuerzos</h3>
+                        <div class="search-controls">
+                            <div class="form-group"><label>Área</label><select id="buscar-area" onchange="cargarFiltroEmpleadosAlmuerzo()"><option value="">-- Seleccionar --</option><option value="PLAYA">PLAYA</option><option value="FACTURACION">FACTURACIÓN</option><option value="OFICINA">OFICINA</option></select></div>
+                            <div class="form-group"><label>Empleado</label><select id="buscar-nombre"><option value="">-- Seleccionar --</option></select></div>
+                            <button class="btn-primary" style="padding: 10px 24px;" onclick="buscarHistorialAlmuerzo()">Buscar</button>
+                            <button class="btn-cancel" style="padding: 10px 24px;" onclick="limpiarBusquedaAlmuerzo()">Limpiar</button>
+                        </div>
+                        <div class="table-container" id="contenedor-tabla-almuerzo" style="display:none;">
+                            <table><thead><tr><th>Nombre</th><th>Fecha</th><th>Salida</th><th>Regreso</th><th>Tiempo Usado</th></tr></thead><tbody id="tabla-resultados-almuerzo"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: ASISTENCIA -->
+                <div id="tab-asistencia" class="admin-tab glass-card" style="display: none; padding: 25px; border-radius: 12px;">
+                    <div class="actions-bar" style="display: flex; gap: 15px; margin-bottom: 25px;">
+                        <button class="btn-outline" onclick="abrirModalBioPersonal()"><i class="fas fa-users"></i> Gestión de Personal</button>
+                        <button class="btn-outline" onclick="abrirModalCorreccion()"><i class="fas fa-edit"></i> Corregir Marcaciones</button>
+                        <button class="btn-export" onclick="document.getElementById('btn-descargar-reporte').click()"><i class="fas fa-file-excel"></i> Exportar Asistencias</button>
+                        <button id="btn-descargar-reporte" style="display:none;"></button>
+                    </div>
+
+                    <div style="margin-bottom: 35px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                            <h3 style="color: var(--nava-silver); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Monitor de Asistencia (Hoy)</h3>
+                            <button class="btn-cancel" style="padding: 4px 10px; font-size: 11px;" onclick="actualizarListasEnVivoAsistencia()" title="Actualizar Datos"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                        </div>
+                        <div class="dashboard-grid">
+                            <div class="status-card pendientes">
+                                <div class="status-header"><h3 style="color:var(--nava-electric-light);"><i class="fas fa-clock"></i> Sin Marcar</h3><span class="status-count" id="count-asis-pendientes">0</span></div>
+                                <ul class="status-list" id="list-asis-pendientes"></ul>
+                            </div>
+                            <div class="status-card en-almuerzo">
+                                <div class="status-header"><h3 style="color:var(--warning);"><i class="fas fa-briefcase"></i> Trabajando</h3><span class="status-count" style="color:var(--warning); background:rgba(255,234,0,0.1);" id="count-asis-trabajando">0</span></div>
+                                <ul class="status-list" id="list-asis-trabajando"></ul>
+                            </div>
+                            <div class="status-card completados">
+                                <div class="status-header"><h3 style="color:var(--success);"><i class="fas fa-check-double"></i> Finalizados</h3><span class="status-count" style="color:var(--success); background:rgba(0,230,118,0.1);" id="count-asis-completados">0</span></div>
+                                <ul class="status-list" id="list-asis-completados"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-section">
+                        <h3 style="margin-bottom: 15px; color: var(--nava-cyan); font-size: 15px;"><i class="fas fa-search"></i> Historial de Asistencia</h3>
+                        <div class="search-controls">
+                            <div class="form-group">
+                                <label>Empleado</label>
+                                <select id="buscar-nombre-asis">
+                                    <option value="">-- Seleccionar --</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary" style="padding: 10px 24px;" onclick="buscarHistorialAsistencia()">Buscar</button>
+                            <button class="btn-cancel" style="padding: 10px 24px;" onclick="limpiarBusquedaAsistencia()">Limpiar</button>
+                        </div>
+                        <div class="table-container" id="contenedor-tabla-asistencia" style="display:none;">
+                            <table><thead><tr><th>Empleado</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead><tbody id="tabla-resultados-asistencia"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </section>
+
+</div>
+
+<!-- ================= MODALES ================= -->
+
+<div id="modal-auth-admin" class="modal-overlay" style="display: none;">
+    <div class="modal-caja glass-card" style="max-width: 400px;">
+        <h3 style="color: var(--nava-cyan); margin-bottom: 15px;"><i class="fas fa-lock"></i> Acceso Restringido</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Ingrese la contraseña de administrador.</p>
+        <input type="password" id="admin-password-input" placeholder="Contraseña..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: white; margin-bottom: 20px; text-align: center;">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-cancel" style="flex: 1;" onclick="cerrarModal('modal-auth-admin')">Cancelar</button>
+            <button class="btn-primary" style="flex: 1;" onclick="validarAdmin()">Ingresar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-cambiar-password" class="modal-overlay" style="display: none;">
+    <div class="modal-caja glass-card" style="max-width: 400px;">
+        <h3 style="color: var(--warning); margin-bottom: 15px;"><i class="fas fa-key"></i> Actualizar Credenciales</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Establece una nueva contraseña para tu panel de administrador.</p>
+        <input type="text" id="new-password-input" placeholder="Nueva Contraseña..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: white; margin-bottom: 20px; text-align: center;">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-cancel" style="flex: 1;" onclick="cerrarModal('modal-cambiar-password')">Cancelar</button>
+            <button class="btn-primary" style="flex: 1;" onclick="guardarNuevaPassword()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: PERSONAL ALMUERZOS ================= -->
+<div id="modal-gestion-almuerzos" class="modal-overlay" style="display:none;">
+    <div class="modal-caja glass-card" style="max-width: 850px; width: 95%;">
+        <div class="modal-header"><h3>Gestión de Personal - Almuerzos</h3><button class="close-btn" onclick="cerrarModal('modal-gestion-almuerzos')">×</button></div>
+        <div class="gestion-controls">
+            <div class="form-group"><label>Área</label><select id="area-gestion"><option value="PLAYA">PLAYA</option><option value="FACTURACION">FACTURACIÓN</option><option value="OFICINA">OFICINA</option></select></div>
+            <!-- NUEVO CAMPO DE CÉDULA -->
+            <div class="form-group"><label>Cédula</label><input type="number" id="nuevo-cedula-alm" placeholder="0999999999" class="input-dark"></div>
+            <div class="form-group" style="flex:2;"><label>Nombre Completo</label><input type="text" id="nuevo-empleado-alm" placeholder="Ej: JUAN PEREZ" class="input-dark"></div>
+            <button class="btn-primary" style="height: 38px;" onclick="agregarEmpleadoAlmuerzo()">Agregar Empleado</button>
+        </div>
+        <div id="grid-empleados-alm" class="grid-areas"></div>
+    </div>
+</div>
+
+<!-- ================= MODAL FLOTANTE: EDITAR ALMUERZOS (NUEVO) ================= -->
+<div id="modal-editar-alm" class="modal-overlay" style="display:none; z-index: 1100;">
+    <div class="modal-caja glass-card" style="max-width: 600px; width: 95%;">
+        <div class="modal-header"><h3>Editar Empleado (Almuerzos)</h3><button class="close-btn" onclick="cerrarModal('modal-editar-alm')">×</button></div>
+        <div class="gestion-controls" style="flex-direction: column; align-items: stretch; gap: 15px; text-align: left;">
+            <input type="hidden" id="edit-alm-old-area">
+            <input type="hidden" id="edit-alm-index">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Área</label>
+                <select id="edit-alm-area">
+                    <option value="PLAYA">PLAYA</option>
+                    <option value="FACTURACION">FACTURACIÓN</option>
+                    <option value="OFICINA">OFICINA</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Cédula</label>
+                <input type="number" id="edit-alm-cedula" class="input-dark" placeholder="0999999999">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Nombre Completo</label>
+                <input type="text" id="edit-alm-nombre" class="input-dark">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-cancel" style="flex:1;" onclick="cerrarModal('modal-editar-alm')">Cancelar</button>
+                <button class="btn-primary" style="flex:1;" onclick="guardarEdicionAlm()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Gestión Biométrica -->
+<div id="modal-gestion-bio" class="modal-overlay" style="display:none;">
+    <div class="modal-caja glass-card" style="max-width: 850px; width: 95%;">
+        <div class="modal-header"><h3>Gestión de Personal - Asistencia Biométrica</h3><button class="close-btn" onclick="cerrarModal('modal-gestion-bio')">×</button></div>
+        <div class="gestion-controls">
+            <div class="form-group"><label>Cédula</label><input type="number" id="bio-cedula" placeholder="0999999999" class="input-dark"></div>
+            <div class="form-group" style="flex:2;"><label>Nombre Completo</label><input type="text" id="bio-nombre" placeholder="JUAN PEREZ" class="input-dark"></div>
+            <div class="form-group"><label>Ciudad</label><select id="bio-ciudad"><option value="QUITO">QUITO</option><option value="GUAYAQUIL">GUAYAQUIL</option><option value="CUENCA">CUENCA</option></select></div>
+            <div class="form-group"><label>Hora Ingreso</label><input type="time" id="bio-hora" value="07:30" class="input-dark"></div>
+            <button class="btn-primary" style="height: 38px;" onclick="agregarEmpleadoBio()">Agregar Empleado</button>
+        </div>
+        <div class="table-container" style="display:block; max-height: 350px; overflow-y:auto; margin-top:0;">
+            <table style="width:100%;">
+                <thead style="position: sticky; top: 0; z-index: 1;"><tr><th>Cédula</th><th>Nombre</th><th>Ciudad</th><th>Ingreso</th><th>Acciones</th></tr></thead>
+                <tbody id="tabla-personal-bio"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Personal Biométrico -->
+<div id="modal-editar-bio" class="modal-overlay" style="display:none;">
+    <div class="modal-caja glass-card" style="max-width: 600px; width: 95%;">
+        <div class="modal-header"><h3>Editar Empleado</h3><button class="close-btn" onclick="cerrarModal('modal-editar-bio')">×</button></div>
+        <div class="gestion-controls" style="flex-direction: column; align-items: stretch; gap: 15px; text-align: left;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Cédula (Identificador único - No editable)</label>
+                <input type="number" id="edit-bio-cedula" class="input-dark" readonly style="background: rgba(255,255,255,0.05); color: var(--text-muted); cursor: not-allowed;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Nombre Completo</label>
+                <input type="text" id="edit-bio-nombre" class="input-dark">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Ciudad</label>
+                <select id="edit-bio-ciudad">
+                    <option value="QUITO">QUITO</option>
+                    <option value="GUAYAQUIL">GUAYAQUIL</option>
+                    <option value="CUENCA">CUENCA</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Hora Ingreso (Afecta cálculo de atrasos)</label>
+                <input type="time" id="edit-bio-hora" class="input-dark">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-cancel" style="flex:1;" onclick="cerrarModal('modal-editar-bio')">Cancelar</button>
+                <button class="btn-primary" style="flex:1;" onclick="guardarEdicionBio()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-corregir-bio" class="modal-overlay" style="display:none;">
+    <div class="modal-caja glass-card" style="max-width: 850px; width: 95%;">
+        <div class="modal-header"><h3>Corregir Registros de Asistencia</h3><button class="close-btn" onclick="cerrarModal('modal-corregir-bio')">×</button></div>
+        <div class="gestion-controls" style="background: rgba(255, 234, 0, 0.05); border-color: var(--warning);">
+            <div class="form-group" style="max-width: 200px;">
+                <label style="color: var(--warning);">Seleccionar Fecha:</label>
+                <input type="date" id="fecha-corregir" onchange="buscarMarcacionesParaCorregirAdmin()" class="input-dark" style="border-color: var(--warning);">
+            </div>
+            <div style="flex:2; align-self:center; font-size:12px; color:var(--text-muted); padding-left:15px; line-height: 1.5; border-left: 1px solid var(--warning); text-align: left;">
+                Acciones permitidas: Borrar solo salida (el turno continúa) o borrar registro completo (reinicia el día para ese empleado).
+            </div>
+        </div>
+        <div class="table-container" style="display:block; max-height: 350px; overflow-y:auto; margin-top:0;">
+            <table style="width:100%;">
+                <thead style="position: sticky; top: 0; z-index: 1;"><tr><th>Nombre</th><th>Entrada</th><th>Salida</th><th>Estado</th><th style="min-width:180px;">Acción</th></tr></thead>
+                <tbody id="tabla-correccion-bio"><tr><td colspan="5" style="text-align:center;">Seleccione una fecha para buscar registros</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modal-alerta" class="modal-overlay" style="display: none; z-index: 2000;">
+    <div class="modal-caja glass-card" style="max-width: 380px; border-top: 4px solid var(--primary);">
+        <h3 id="alerta-titulo" style="margin-top: 0; font-size: 16px;">Aviso</h3>
+        <div id="alerta-mensaje" style="font-size: 14px; color: var(--text-main); margin-bottom: 25px; line-height: 1.5; margin-top: 15px;">Mensaje</div>
+        <button class="btn-cancel" style="width:100%; padding: 10px;" onclick="cerrarModal('modal-alerta')">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-confirmacion" class="modal-overlay" style="display: none; z-index: 2000;">
+    <div class="modal-caja glass-card" style="max-width: 380px;">
+        <h3 id="confirmacion-titulo" style="margin-top: 0; margin-bottom: 15px; font-size: 16px;">Confirmar Acción</h3>
+        <p id="confirmacion-mensaje" style="color: var(--text-main); margin-bottom: 25px; line-height: 1.5; font-size: 14px;">¿Está seguro?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-cancel" onclick="cerrarModal('modal-confirmacion')" style="flex:1; padding: 10px;">Cancelar</button>
+            <button class="btn-primary" id="btn-confirmar-accion" style="flex:1; padding: 10px;">Continuar</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
