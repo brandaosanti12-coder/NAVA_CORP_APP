@@ -7,9 +7,9 @@ const db = getFirestore(app);
 
 const hoyStr = new Date().toLocaleDateString('sv-SE');
 let timerEnVivo = null, empleadosERPGlobal = [], registrosAlmGlobales = [], marcacionesGlobales = [];
-let idDocumentoFirebase = null, horaEntradaGuardada = null;
+let idDocumentoFirebase = null;
 let timerAlmuerzoEmpleado = null;
-let cedulaOriginalEditar = null; // Guardará el ID previo al editar para evitar duplicaciones
+let cedulaOriginalEditar = null; 
 window.modoAlmuerzoGlobal = 'TOKEN'; 
 window.empleadosEnAlmuerzo = [];
 let areasDinamicas = ["PLAYA", "FACTURACION", "OFICINA"];
@@ -58,12 +58,12 @@ window.onload = function() { history.replaceState({ vista: 'inicio' }, "", windo
 window.navegar = function(vistaId, pushToHistory = true) {
     document.getElementById('pantalla-inicio').style.display = 'none'; document.getElementById('app-container').style.display = 'flex'; 
     document.querySelectorAll('.view-section').forEach(v => v.style.display = 'none'); document.getElementById(vistaId).style.display = 'flex';
+
     if (vistaId === 'view-admin' || vistaId === 'view-dashboard-empleado') document.getElementById('btn-volver-global').style.display = 'none'; else document.getElementById('btn-volver-global').style.display = 'block';
     if (pushToHistory) history.pushState({ vista: vistaId }, "", `#${vistaId}`);
 };
 
 window.volverInicio = function(pushToHistory = true) {
-    if(document.getElementById('view-asistencia').style.display === 'flex') { navegar('view-dashboard-empleado'); return; }
     document.getElementById('app-container').style.display = 'none'; document.getElementById('pantalla-inicio').style.display = 'flex';
     if (pushToHistory) history.pushState({ vista: 'inicio' }, "", window.location.pathname + window.location.search);
 };
@@ -74,7 +74,7 @@ window.addEventListener('popstate', (event) => {
 });
 
 // ==========================================================================
-//   3. AUTENTICACIÓN DE EMPLEADOS
+//   3. AUTENTICACIÓN Y CONTROL DEL DASHBOARD EMPLEADO
 // ==========================================================================
 window.loginEmpleado = async function() {
     const inputCedula = document.getElementById('login-cedula').value.trim();
@@ -84,7 +84,7 @@ window.loginEmpleado = async function() {
     if(!inputPass) return mostrarAlertaCustom("Por favor, ingrese su contraseña.", "warning");
 
     const btn = document.querySelector('button[onclick="loginEmpleado()"]');
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> verificando...';
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando ERP...';
 
     try {
         const refEmpleado = doc(db, "empleados", inputCedula);
@@ -99,32 +99,14 @@ window.loginEmpleado = async function() {
             } else {
                 document.getElementById('dash-nombre-empleado').innerText = datos.nombres;
                 document.getElementById('cedula').value = inputCedula; 
-                document.getElementById('txt-nombre').innerText = datos.nombres;
-                document.getElementById('txt-ciudad').innerText = datos.ciudad || "QUITO";
-                document.getElementById('txt-area').innerText = datos.area || "GENERAL";
-                document.getElementById('txt-horario-asignado').innerText = datos.horaIngreso || "07:30";
                 
-                const btnAsis = document.getElementById('btn-modulo-asistencia');
-                const btnAlm = document.getElementById('contenedor-almuerzo-empleado');
-                
-                if(datos.permisoAsistencia) btnAsis.style.display = 'block'; else btnAsis.style.display = 'none';
-                if(datos.permisoAlmuerzo) {
-                    btnAlm.style.display = 'block';
-                    verificarEstadoAlmuerzoEmpleado(datos.nombres);
-                } else { btnAlm.style.display = 'none'; }
+                await refrescarDashboardEmpleado();
 
-                if(!datos.permisoAsistencia && !datos.permisoAlmuerzo) {
-                    mostrarAlertaCustom("Tu usuario no tiene módulos habilitados. Contacta al Administrador.", "warning");
-                }
-
-                document.getElementById('info-registros').style.display = "none"; document.getElementById('datos-salida').style.display = "none";
-                document.getElementById('caja-atraso').style.display = "none"; document.getElementById('btn-entrada').style.display = "block";
-                document.getElementById('btn-entrada').disabled = false; document.getElementById('btn-salida-bio').style.display = "none";
-
-                document.getElementById('login-cedula').value = ""; document.getElementById('login-password').value = "";
+                document.getElementById('login-cedula').value = ""; 
+                document.getElementById('login-password').value = "";
                 navegar('view-dashboard-empleado');
             }
-        } else { mostrarAlertaCustom("Empleado no registrado. Solicite su registro en el Panel de Administrador.", "error"); }
+        } else { mostrarAlertaCustom("Empleado no registrado en el ERP. Solicite su registro en el Panel de Administrador.", "error"); }
     } catch (error) { console.error(error); mostrarAlertaCustom("Error de conexión al ERP.", "error"); }
     
     btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Acceder al Portal';
@@ -132,38 +114,213 @@ window.loginEmpleado = async function() {
 
 window.cerrarSesionEmpleado = function() {
     if(timerAlmuerzoEmpleado) clearInterval(timerAlmuerzoEmpleado);
-    document.getElementById('dash-nombre-empleado').innerText = "NOMBRE"; document.getElementById('cedula').value = ""; volverInicio();
+    document.getElementById('dash-nombre-empleado').innerText = "NOMBRE EMPLEADO"; document.getElementById('cedula').value = ""; volverInicio();
+};
+
+// REFRESCAR TODO EL DASHBOARD (PERFIL, PERMISOS DE MÓDULO Y HORARIO CONDICIONAL)
+window.refrescarDashboardEmpleado = async function() {
+    const btn = document.getElementById('btn-refrescar-dash');
+    const cedulaValor = document.getElementById('cedula').value.trim();
+    if(btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refrescando...'; }
+    
+    if(cedulaValor) {
+        try {
+            // 1. RECONSULTAR PERFIL ACTUALIZADO EN FIRESTORE
+            const snapEmp = await getDoc(doc(db, "empleados", cedulaValor));
+            if(snapEmp.exists()) {
+                const datos = snapEmp.data();
+                document.getElementById('dash-nombre-empleado').innerText = datos.nombres;
+                document.getElementById('txt-ciudad').innerText = datos.ciudad || "QUITO";
+                document.getElementById('txt-area').innerText = datos.area || "GENERAL";
+                document.getElementById('txt-horario-asignado').innerText = datos.horaIngreso || "07:30";
+
+                window.permisosUsuarioActivo = {
+                    asistencia: datos.permisoAsistencia !== false,
+                    almuerzo: datos.permisoAlmuerzo !== false
+                };
+
+                // MOSTRAR U OCULTAR EL BLOQUE DE HORARIO SEGÚN PERMISO DE ASISTENCIA
+                const contenedorHorario = document.getElementById('lbl-contenedor-horario');
+                if (contenedorHorario) {
+                    contenedorHorario.style.display = window.permisosUsuarioActivo.asistencia ? 'inline' : 'none';
+                }
+
+                // Actualizar visibilidad de botones en el Grid
+                document.getElementById('btn-act-entrada').style.display = window.permisosUsuarioActivo.asistencia ? 'flex' : 'none';
+                document.getElementById('btn-act-salida').style.display = window.permisosUsuarioActivo.asistencia ? 'flex' : 'none';
+                document.getElementById('btn-act-ir-almuerzo').style.display = window.permisosUsuarioActivo.almuerzo ? 'flex' : 'none';
+                document.getElementById('btn-act-volver-almuerzo').style.display = window.permisosUsuarioActivo.almuerzo ? 'flex' : 'none';
+
+                // Actualizar visibilidad de las tarjetas de resumen
+                document.getElementById('resumen-asistencia-block').style.display = window.permisosUsuarioActivo.asistencia ? 'block' : 'none';
+                document.getElementById('resumen-almuerzo-block').style.display = window.permisosUsuarioActivo.almuerzo ? 'block' : 'none';
+            }
+
+            // 2. RECONSULTAR CONFIGURACIÓN GLOBAL MODO ALMUERZO (TOKEN / QR)
+            const snapAjustes = await getDoc(doc(db, "configuracion", "ajustes_sistema"));
+            if(snapAjustes.exists()) {
+                window.modoAlmuerzoGlobal = snapAjustes.data().modo_almuerzo || 'TOKEN';
+            }
+
+            // 3. RECARGAR REGISTROS EN VIVO
+            const nombreActual = document.getElementById('dash-nombre-empleado').innerText;
+            await cargarEstadoUnificadoEmpleado(nombreActual);
+
+        } catch (error) {
+            console.error("Error al refrescar dashboard:", error);
+        }
+    }
+    
+    if(btn) {
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
+        }, 300);
+    }
 };
 
 // ==========================================================================
-//   4. ASISTENCIA BIOMÉTRICA CON GPS
+//   4. LÓGICA DE REGISTRO Y DETECCIÓN DE ESTADO
 // ==========================================================================
+async function cargarEstadoUnificadoEmpleado(nombre) {
+    const cedulaValor = document.getElementById('cedula').value.trim();
+    if (!cedulaValor) return;
+
+    const ahora = new Date();
+    const fechaCorta = String(ahora.getDate()).padStart(2, '0') + "/" + String(ahora.getMonth() + 1).padStart(2, '0') + "/" + ahora.getFullYear();
+
+    let tieneEntrada = false;
+    let tieneSalidaJornada = false;
+    let tieneSalidaAlm = false;
+    let tieneRegresoAlm = false;
+
+    // 1. EVALUAR ASISTENCIA EN FIRESTORE
+    try {
+        const qAsis = query(collection(db, "marcaciones"), where("cedula", "==", cedulaValor), where("fecha", "==", fechaCorta));
+        const snapAsis = await getDocs(qAsis);
+
+        if (!snapAsis.empty) {
+            let d = null;
+            snapAsis.forEach(docSnap => { d = docSnap.data(); idDocumentoFirebase = docSnap.id; });
+
+            tieneEntrada = true;
+            document.getElementById('txt-hora-entrada').innerText = d.horaEntrada || "--:--";
+            document.getElementById('txt-ubicacion-entrada').innerHTML = d.enlaceGoogleMapsEntrada || d.ubicacionEntrada || "Registrada";
+
+            if (d.atraso && d.atraso !== "A tiempo") {
+                document.getElementById('caja-atraso').style.display = "flex";
+                document.getElementById('txt-atraso').innerText = d.atraso;
+            } else {
+                document.getElementById('caja-atraso').style.display = "none";
+            }
+
+            if (d.horaSalida) {
+                tieneSalidaJornada = true;
+                document.getElementById('txt-hora-salida').innerText = d.horaSalida;
+                document.getElementById('txt-ubicacion-salida').innerHTML = d.enlaceGoogleMapsSalida || d.ubicacionSalida || "Registrada";
+                
+                let resumenSalida = d.tiempoTrabajado || "--";
+                if(d.horasExtras && d.horasExtras !== "0 minutos") {
+                    resumenSalida += ` (Extras: ${d.horasExtras})`;
+                }
+                document.getElementById('txt-trabajado').innerText = resumenSalida;
+            } else {
+                document.getElementById('txt-hora-salida').innerText = "--:--";
+                document.getElementById('txt-ubicacion-salida').innerText = "Pendiente...";
+                document.getElementById('txt-trabajado').innerText = "En curso...";
+            }
+        } else {
+            document.getElementById('txt-hora-entrada').innerText = "--:--";
+            document.getElementById('txt-ubicacion-entrada').innerText = "Pendiente...";
+            document.getElementById('caja-atraso').style.display = "none";
+            document.getElementById('txt-hora-salida').innerText = "--:--";
+            document.getElementById('txt-ubicacion-salida').innerText = "Pendiente...";
+            document.getElementById('txt-trabajado').innerText = "--";
+        }
+    } catch (e1) { console.error("Error cargando asistencia:", e1); }
+
+    // 2. EVALUAR ALMUERZO EN FIRESTORE
+    try {
+        const refAlm = doc(db, "registros", nombre + "_" + hoyStr);
+        const snapAlm = await getDoc(refAlm);
+
+        if (snapAlm.exists()) {
+            const dA = snapAlm.data();
+            if (dA.salida) {
+                tieneSalidaAlm = true;
+                const salidaMs = dA.salida.seconds * 1000;
+                document.getElementById('txt-alm-inicio').innerText = new Date(salidaMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            if (dA.regreso) {
+                tieneRegresoAlm = true;
+                const regresoMs = dA.regreso.seconds * 1000;
+                document.getElementById('txt-alm-fin').innerText = new Date(regresoMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                const salidaMs = dA.salida.seconds * 1000;
+                const usadoMin = Math.floor((regresoMs - salidaMs) / 60000);
+                const excedeMin = usadoMin - 60;
+
+                if (excedeMin > 0) {
+                    document.getElementById('txt-alm-estado').innerHTML = `<span style="color:var(--danger)">Completado - Excedido (${formatoHorasMinutos(excedeMin)})</span>`;
+                } else {
+                    document.getElementById('txt-alm-estado').innerHTML = `<span style="color:var(--success)">Completado - A tiempo (${formatoHorasMinutos(usadoMin)})</span>`;
+                }
+            } else if (dA.salida && !dA.regreso) {
+                document.getElementById('txt-alm-fin').innerText = "--:--";
+                document.getElementById('txt-alm-estado').innerHTML = `<span style="color:var(--warning)"><i class="fas fa-spinner fa-spin"></i> En curso...</span>`;
+            }
+        } else {
+            document.getElementById('txt-alm-inicio').innerText = "--:--";
+            document.getElementById('txt-alm-fin').innerText = "--:--";
+            document.getElementById('txt-alm-estado').innerText = "Sin registrar";
+        }
+    } catch (e2) { console.error("Error cargando almuerzo:", e2); }
+
+    // 3. SECUENCIA Y ESTADO DE LOS BOTONES
+    const btnEntrada = document.getElementById('btn-act-entrada');
+    const btnSalida = document.getElementById('btn-act-salida');
+    const btnIrAlm = document.getElementById('btn-act-ir-almuerzo');
+    const btnVolverAlm = document.getElementById('btn-act-volver-almuerzo');
+
+    // Botones Asistencia
+    btnEntrada.disabled = tieneEntrada;
+    btnSalida.disabled = !tieneEntrada || tieneSalidaJornada;
+
+    // Botones Almuerzo
+    btnIrAlm.disabled = tieneSalidaAlm;
+    btnVolverAlm.disabled = !tieneSalidaAlm || tieneRegresoAlm;
+
+    if (tieneSalidaJornada) {
+        btnEntrada.disabled = true;
+        btnSalida.disabled = true;
+    }
+}
+
 async function obtenerHoraDeLaWeb() {
     try {
         const respuesta = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=America/Guayaquil');
         if (!respuesta.ok) throw new Error("Fallo en servidor");
         const datos = await respuesta.json(); return new Date(datos.dateTime);
-    } catch (error) { return null; }
+    } catch (error) { return new Date(); }
 }
-
-function milisegundosATexto(ms) { return formatoHorasMinutos(ms / 60000); }
 
 function obtenerUbicacion() {
     return new Promise((resolve) => {
-        if (!navigator.geolocation) resolve("No soportado");
+        if (!navigator.geolocation) resolve("Sin GPS");
         navigator.geolocation.getCurrentPosition(
-            (posicion) => resolve(`<a href="https://www.google.com/maps?q=${posicion.coords.latitude},${posicion.coords.longitude}" target="_blank" style="color:var(--nava-cyan);"><i class="fas fa-map-marker-alt"></i> Ver Mapa</a>`),
-            (error) => resolve("Sin GPS"), { enableHighAccuracy: true }
+            (posicion) => resolve(`<a href="https://www.google.com/maps?q=${posicion.coords.latitude},${posicion.coords.longitude}" target="_blank" style="color:var(--nava-cyan); font-weight:bold;"><i class="fas fa-map-marker-alt"></i> Ver GPS</a>`),
+            (error) => resolve("Ubicación No Permitida"), { enableHighAccuracy: true, timeout: 5000 }
         );
     });
 }
 
 window.procesarMarcacion = async function(tipo) {
     const cedulaValor = document.getElementById('cedula').value.trim();
+    const nombreEmpleado = document.getElementById('dash-nombre-empleado').innerText;
     if (cedulaValor === "") return mostrarAlertaCustom("Error de sesión. Vuelva a iniciar sesión.", "error");
-    
-    const botonActivo = tipo === 'entrada' ? 'btn-entrada' : 'btn-salida-bio';
-    document.getElementById(botonActivo).disabled = true;
+
+    const btnId = tipo === 'entrada' ? 'btn-act-entrada' : 'btn-act-salida';
+    document.getElementById(btnId).disabled = true;
 
     try {
         const refEmpleado = doc(db, "empleados", cedulaValor);
@@ -173,8 +330,6 @@ window.procesarMarcacion = async function(tipo) {
         const [hIng, mIng] = horaAsignadaStr.split(':').map(Number);
         
         const horaSistema = await obtenerHoraDeLaWeb();
-        if (!horaSistema) { document.getElementById(botonActivo).disabled = false; mostrarAlertaCustom("Error de internet.", "error"); return; }
-
         const horaFormateada = horaSistema.toLocaleTimeString('es-ES', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
         const fechaCorta = String(horaSistema.getDate()).padStart(2, '0') + "/" + String(horaSistema.getMonth() + 1).padStart(2, '0') + "/" + horaSistema.getFullYear();
 
@@ -184,34 +339,16 @@ window.procesarMarcacion = async function(tipo) {
         let registroExistente = null; let idDocExistente = null;
         resultadosConsulta.forEach((docSnap) => { registroExistente = docSnap.data(); idDocExistente = docSnap.id; });
 
-        if (registroExistente && registroExistente.horaSalida) {
-            mostrarAlertaCustom(`Ya marcaste tu entrada y salida hoy.`, "warning");
-            document.getElementById('txt-hora-entrada').innerText = registroExistente.horaEntrada; document.getElementById('txt-hora-salida').innerText = registroExistente.horaSalida;
-            document.getElementById('info-registros').style.display = "block"; document.getElementById('datos-salida').style.display = "block";
-            document.getElementById('btn-entrada').style.display = "none"; document.getElementById('btn-salida-bio').style.display = "none"; return; 
-        }
-
         if (tipo === 'entrada') {
-            if (registroExistente) {
-                mostrarAlertaCustom(`Ya tienes una entrada registrada. Marca tu salida.`, "warning");
-                idDocumentoFirebase = idDocExistente;
-                if (registroExistente.tiempoEntradaMs) horaEntradaGuardada = new Date(registroExistente.tiempoEntradaMs);
-                document.getElementById('info-registros').style.display = "block"; document.getElementById('btn-entrada').style.display = "none"; document.getElementById('btn-salida-bio').style.display = "block"; document.getElementById('btn-salida-bio').disabled = false; return; 
-            }
-        } else if (tipo === 'salida') {
-            if (!registroExistente) { mostrarAlertaCustom("No tienes entrada hoy.", "warning"); document.getElementById('btn-salida-bio').disabled = false; return; }
-            idDocumentoFirebase = idDocExistente; if (registroExistente.tiempoEntradaMs) horaEntradaGuardada = new Date(registroExistente.tiempoEntradaMs);
-        }
-
-        document.getElementById('txt-ubicacion-' + tipo).innerText = "Obteniendo GPS...";
-        const enlaceUbicacion = await obtenerUbicacion();
-        document.getElementById('info-registros').style.display = "block";
-
-        if (tipo === 'entrada') {
-            horaEntradaGuardada = horaSistema; document.getElementById('txt-hora-entrada').innerText = horaFormateada; document.getElementById('txt-ubicacion-entrada').innerHTML = enlaceUbicacion;
+            document.getElementById('txt-ubicacion-entrada').innerText = "Obteniendo GPS...";
+            const enlaceUbicacion = await obtenerUbicacion();
             
-            let textoAtraso = "A tiempo"; const limiteEntrada = new Date(horaSistema); limiteEntrada.setHours(hIng, mIng, 0, 0); 
-            if (horaSistema > limiteEntrada) textoAtraso = milisegundosATexto(horaSistema - limiteEntrada);
+            let textoAtraso = "A tiempo"; 
+            const limiteEntrada = new Date(horaSistema); 
+            limiteEntrada.setHours(hIng, mIng, 0, 0); 
+            if (horaSistema > limiteEntrada) {
+                textoAtraso = formatoHorasMinutos((horaSistema - limiteEntrada) / 60000);
+            }
 
             const nuevoRegistro = await addDoc(collection(db, "marcaciones"), {
                 cedula: cedulaValor, nombre: datosEmpleado.nombres, ciudad: datosEmpleado.ciudad || "QUITO", fecha: fechaCorta,
@@ -219,79 +356,50 @@ window.procesarMarcacion = async function(tipo) {
                 ubicacionEntrada: enlaceUbicacion.replace(/<[^>]*>?/gm, 'Link Mapa'), enlaceGoogleMapsEntrada: enlaceUbicacion, estado: "Trabajando", horarioAsignado: horaAsignadaStr
             });
             idDocumentoFirebase = nuevoRegistro.id;
-            document.getElementById('btn-entrada').style.display = "none"; document.getElementById('btn-salida-bio').style.display = "block"; document.getElementById('btn-salida-bio').disabled = false;
-            mostrarAlertaCustom("¡Entrada registrada!", "success");
+            
+            mostrarAlertaCustom("¡Entrada registrada correctamente!", "success");
 
         } else if (tipo === 'salida') {
-            document.getElementById('txt-hora-salida').innerText = horaFormateada; document.getElementById('txt-ubicacion-salida').innerHTML = enlaceUbicacion; document.getElementById('datos-salida').style.display = "block";
-
-            let tiempoTrabajado = "Falta registro"; if (horaEntradaGuardada) tiempoTrabajado = milisegundosATexto(horaSistema - horaEntradaGuardada);
-
-            await updateDoc(doc(db, "marcaciones", idDocumentoFirebase), {
-                horaSalida: horaFormateada, tiempoTrabajado: tiempoTrabajado,
-                ubicacionSalida: enlaceUbicacion.replace(/<[^>]*>?/gm, 'Link Mapa'), enlaceGoogleMapsSalida: enlaceUbicacion, estado: "Turno Finalizado"
-            });
-            document.getElementById('btn-salida-bio').style.display = "none"; mostrarAlertaCustom("¡Jornada finalizada!", "success");
-        }
-    } catch (error) { mostrarAlertaCustom("Ocurrió un error al guardar los datos.", "error"); document.getElementById(botonActivo).disabled = false; }
-};
-
-// ==========================================================================
-//   5. REGISTRO DE ALMUERZO (TOKENS Y QR DUAL)
-// ==========================================================================
-window.verificarEstadoAlmuerzoEmpleado = async function(nombre) {
-    const contenedor = document.getElementById('contenedor-almuerzo-empleado');
-    contenedor.innerHTML = '<p style="color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Cargando estado...</p>';
-    if(timerAlmuerzoEmpleado) clearInterval(timerAlmuerzoEmpleado);
-
-    try {
-        const snapAjustes = await getDoc(doc(db, "configuracion", "ajustes_sistema"));
-        if(snapAjustes.exists()) window.modoAlmuerzoGlobal = snapAjustes.data().modo_almuerzo || 'TOKEN';
-
-        const ref = doc(db, "registros", nombre + "_" + hoyStr); const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-            contenedor.innerHTML = `<button class="btn-menu" style="border-color: var(--warning); color: var(--warning); width: 100%;" onclick="iniciarProcesoAlmuerzo('SALIDA')"><i class="fas fa-utensils"></i> REGISTRAR SALIDA ALMUERZO</button>`;
-        } else {
-            const d = snap.data();
-            if (d.salida && !d.regreso) {
-                const salidaMs = d.salida.seconds * 1000; const horaSalidaText = new Date(salidaMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                contenedor.innerHTML = `
-                    <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border-left: 3px solid var(--warning); text-align: center; margin-bottom: 15px;">
-                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">Hora de Salida</p>
-                        <p style="color: var(--text-main); font-size: 16px; font-weight: bold; margin-bottom: 15px;">${horaSalidaText}</p>
-                        <p id="lbl-tiempo-crono" style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">Tiempo Restante</p>
-                        <div id="crono-empleado" style="font-size: 38px; font-weight: 800; color: var(--warning); margin-bottom: 20px;">60:00</div>
-                        <button class="btn-primary" style="width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); font-size: 14px;" onclick="iniciarProcesoAlmuerzo('RETORNO')"><i class="fas fa-walking"></i> MARCAR REGRESO</button>
-                    </div>`;
-
-                timerAlmuerzoEmpleado = setInterval(() => {
-                    const diffMs = Date.now() - salidaMs; const restanteMs = (60 * 60 * 1000) - diffMs;
-                    const isExcedido = restanteMs < 0; const absRestante = Math.abs(restanteMs);
-                    const totalSegundos = Math.floor(absRestante / 1000); const minutos = Math.floor(totalSegundos / 60); const segundos = totalSegundos % 60;
-                    const cronoEl = document.getElementById('crono-empleado'); const lblCrono = document.getElementById('lbl-tiempo-crono');
-                    
-                    if(cronoEl && lblCrono) {
-                        const sign = isExcedido ? "-" : ""; cronoEl.innerText = `${sign}${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-                        if(isExcedido) { cronoEl.style.color = 'var(--danger)'; lblCrono.innerText = "TIEMPO EXCEDIDO"; lblCrono.style.color = 'var(--danger)'; } 
-                        else { cronoEl.style.color = 'var(--warning)'; lblCrono.innerText = "TIEMPO RESTANTE"; lblCrono.style.color = 'var(--text-muted)'; }
-                    }
-                }, 1000);
-
-            } else if (d.salida && d.regreso) {
-                const salidaMs = d.salida.seconds * 1000; const regresoMs = d.regreso.seconds * 1000;
-                const usadoMin = Math.floor((regresoMs - salidaMs) / 60000);
-                contenedor.innerHTML = `
-                    <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border-left: 3px solid var(--success); text-align: left;">
-                        <h4 style="color: var(--success); margin-bottom: 15px; text-align: center;"><i class="fas fa-check-double"></i> Almuerzo Completado</h4>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span style="color: var(--text-muted);">Tomado:</span><span style="color: var(--nava-cyan); font-weight: bold;">${formatoHorasMinutos(usadoMin)}</span></div>
-                    </div>`;
+            document.getElementById('txt-ubicacion-salida').innerText = "Obteniendo GPS...";
+            const enlaceUbicacion = await obtenerUbicacion();
+            
+            let msEntrada = registroExistente ? registroExistente.tiempoEntradaMs : horaSistema.getTime();
+            let msTrabajados = horaSistema.getTime() - msEntrada;
+            let tiempoTrabajadoStr = formatoHorasMinutos(msTrabajados / 60000);
+            
+            let horasExtrasStr = "0 minutos";
+            if (msTrabajados > (8 * 60 * 60 * 1000)) {
+                horasExtrasStr = formatoHorasMinutos((msTrabajados - (8 * 60 * 60 * 1000)) / 60000);
             }
+
+            await updateDoc(doc(db, "marcaciones", idDocExistente || idDocumentoFirebase), {
+                horaSalida: horaFormateada, 
+                tiempoTrabajado: tiempoTrabajadoStr, 
+                horasExtras: horasExtrasStr,
+                ubicacionSalida: enlaceUbicacion.replace(/<[^>]*>?/gm, 'Link Mapa'), 
+                enlaceGoogleMapsSalida: enlaceUbicacion, 
+                estado: "Turno Finalizado"
+            });
+            
+            mostrarAlertaCustom("¡Jornada finalizada correctamente!", "success");
         }
-    } catch (error) { contenedor.innerHTML = '<p style="color:var(--danger);">Error al cargar estado.</p>'; }
+
+        await cargarEstadoUnificadoEmpleado(nombreEmpleado);
+
+    } catch (error) { 
+        console.error(error);
+        mostrarAlertaCustom("Ocurrió un error al guardar marcación.", "error"); 
+        document.getElementById(btnId).disabled = false; 
+    }
 };
 
-window.iniciarProcesoAlmuerzo = function(tipo) { if(window.modoAlmuerzoGlobal === 'QR') abrirEscanerQR(tipo); else abrirModalToken(tipo); };
+// ==========================================================================
+//   5. REGISTRO DE ALMUERZO
+// ==========================================================================
+window.iniciarProcesoAlmuerzo = function(tipo) { 
+    if(window.modoAlmuerzoGlobal === 'QR') abrirEscanerQR(tipo); 
+    else abrirModalToken(tipo); 
+};
 
 window.abrirModalToken = function(tipo) {
     window.estadoAlmuerzoActual = tipo; 
@@ -309,9 +417,11 @@ window.validarTokenYRegistrar = async function() {
         const nombre = document.getElementById('dash-nombre-empleado').innerText; const cedula = document.getElementById('cedula').value; const ref = doc(db, "registros", nombre + "_" + hoyStr);
         if (window.estadoAlmuerzoActual === "SALIDA") await setDoc(ref, { nombre: nombre, fecha: hoyStr, salida: serverTimestamp(), regreso: null, cedula: cedula });
         else await updateDoc(ref, { regreso: serverTimestamp() });
-        cerrarModal('modal-token-almuerzo'); verificarEstadoAlmuerzoEmpleado(nombre);
+        
+        cerrarModal('modal-token-almuerzo'); 
+        await cargarEstadoUnificadoEmpleado(nombre);
     } catch (error) { mostrarAlertaCustom("Error de conexión.", "error"); }
-    btn.disabled = false; btn.innerHTML = 'Validar';
+    btn.disabled = false; btn.innerHTML = 'Validar y Registrar';
 };
 
 let escanerActivo = null;
@@ -331,12 +441,12 @@ async function onEscaneoExitoso(textoEscaneado) {
         const nombre = document.getElementById('dash-nombre-empleado').innerText; const cedula = document.getElementById('cedula').value; const ref = doc(db, "registros", nombre + "_" + hoyStr);
         if (window.estadoAlmuerzoActual === "SALIDA") await setDoc(ref, { nombre: nombre, fecha: hoyStr, salida: serverTimestamp(), regreso: null, cedula: cedula });
         else await updateDoc(ref, { regreso: serverTimestamp() });
-        verificarEstadoAlmuerzoEmpleado(nombre);
+        await cargarEstadoUnificadoEmpleado(nombre);
     } catch (error) { mostrarAlertaCustom("Error al guardar.", "error"); }
 }
 
 // ==========================================================================
-//   6. PANEL ADMINISTRADOR ERP (GESTIÓN BLINDADA DE EMPLEADOS)
+//   6. PANEL ADMINISTRADOR ERP
 // ==========================================================================
 window.abrirModalAuth = function() { document.getElementById('modal-auth-admin').style.display = 'flex'; document.getElementById('admin-password-input').value = ""; };
 window.validarAdmin = async function() {
@@ -506,7 +616,6 @@ window.filtrarDirectorio = function() {
         if(emp.permisoAsistencia) modulosHtml.push('<i class="fas fa-fingerprint" title="Asistencia" style="color:var(--nava-cyan);"></i>');
         if(emp.permisoAlmuerzo) modulosHtml.push('<i class="fas fa-utensils" title="Almuerzos" style="color:var(--warning);"></i>');
         
-        // Se añade notranslate y translate="no" para que Google Translate no modifique los IDs ni Nombres
         tb.innerHTML += `<tr class="notranslate" translate="no">
             <td class="notranslate" translate="no"><strong>${emp.cedula}</strong></td>
             <td class="notranslate" translate="no"><strong>${emp.nombres}</strong></td>
@@ -530,7 +639,7 @@ window.abrirModalFichaEmpleado = function(cedula = null) {
 
     if(cedula) {
         const emp = empleadosERPGlobal.find(e => e.cedula === cedula);
-        cedulaOriginalEditar = emp.cedula; // Guardamos el ID previo
+        cedulaOriginalEditar = emp.cedula; 
         document.getElementById('ficha-accion').value = 'editar';
         document.getElementById('ficha-cedula').value = emp.cedula; 
         document.getElementById('ficha-celular').value = emp.celular || "";
@@ -569,8 +678,6 @@ window.guardarFichaEmpleado = async function() {
 
     if(!cedulaNueva || !nombres) return mostrarAlertaCustom("Cédula y Nombres son obligatorios.", "warning");
 
-    // VALIDACIÓN 1: Cédula duplicada
-    // Se bloquea si la nueva cédula ya existe en OTRO empleado activo
     const empExisteCedula = empleadosERPGlobal.find(e => e.cedula === cedulaNueva);
     if (empExisteCedula) {
         if (accion === 'nuevo' || (accion === 'editar' && cedulaOriginalEditar !== cedulaNueva)) {
@@ -578,8 +685,6 @@ window.guardarFichaEmpleado = async function() {
         }
     }
 
-    // VALIDACIÓN 2: Contraseña duplicada
-    // Se bloquea si la clave que se intenta poner la está usando OTRO empleado
     const pwdEfectiva = pwd || cedulaNueva;
     const empExistePassword = empleadosERPGlobal.find(e => {
         const passOtro = e.password || e.cedula;
@@ -598,12 +703,10 @@ window.guardarFichaEmpleado = async function() {
     try {
         const data = { cedula: cedulaNueva, celular: celular, nombres: nombres, ciudad: ciudad, area: area, horaIngreso: hora, password: pwdEfectiva, permisoAsistencia: pAsis, permisoAlmuerzo: pAlm };
         
-        // Si al EDITAR se cambia el número de Cédula/ID, eliminamos el documento viejo para no dejar duplicados sueltos
         if (accion === 'editar' && cedulaOriginalEditar && cedulaOriginalEditar !== cedulaNueva) {
             await deleteDoc(doc(db, "empleados", cedulaOriginalEditar));
         }
 
-        // Guardar documento con la Cédula/ID único
         await setDoc(doc(db, "empleados", cedulaNueva), data);
         
         mostrarAlertaCustom(`Empleado ${nombres} guardado con éxito.`, "success"); 

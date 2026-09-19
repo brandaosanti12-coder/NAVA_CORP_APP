@@ -12,7 +12,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
-/* ===== ESTILOS ERP, BIENVENIDA NAVA CORP & OCULTAR SPINNERS DE INPUTS ===== */
 .btn-volver-web {
     position: absolute; top: 22px; right: 26px; z-index: 50; display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 18px; border-radius: 999px; border: 1px solid var(--nava-cyan); color: var(--nava-cyan);
@@ -35,27 +34,68 @@
 .powered-by { margin-top: 30px; text-align: center; color: var(--text-muted); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
 .powered-by b { color: var(--nava-cyan); }
 
-/* Ocultar flechas numéricas (Spinners) en todos los navegadores */
 input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-input[type=number] {
-    -moz-appearance: textfield;
-}
+input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
 
-/* Corrección de confinamiento de scroll en modales */
-.modal-caja {
-    position: relative !important;
-    overflow: hidden !important;
-    border-radius: 18px !important;
+/* ESTILOS DE LA BOTONERA DE ACCIÓN Y DASHBOARD DEL EMPLEADO */
+.grid-acciones-empleado {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin-bottom: 25px;
+    width: 100%;
+}
+.btn-accion-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn-accion-card i { font-size: 20px; color: var(--nava-cyan); transition: 0.25s; }
+.btn-accion-card:hover:not(:disabled) {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--nava-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
+}
+.btn-accion-card:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    filter: grayscale(0.9);
+    border-color: rgba(255,255,255,0.05);
+}
+.btn-accion-card:disabled i { color: var(--text-muted); }
+
+/* CONTENEDOR DE RESUMEN SIN DESBORDAMIENTO */
+.box-resumen-seccion {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: left;
     box-sizing: border-box !important;
+    width: 100% !important;
+    margin-bottom: 12px;
 }
 
 @media(max-width:820px){
     .btn-volver-web { top: 14px; right: 14px; padding: 8px 12px; font-size: 10px; }
     .welcome-empresa { font-size: 2rem; }
+    .grid-acciones-empleado { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -71,7 +111,7 @@ input[type=number] {
     <div class="right-side">
         <a href="../../index.html" class="btn-volver-web" title="Regresar al sitio web"><i class="fas fa-arrow-left-long"></i> Volver a la Web</a>
         <div class="welcome-box">
-
+            <span class="welcome-eyebrow">Sistema ERP Unificado</span>
             <h1 class="welcome-empresa">ITSACOURIER</h1>
             <p class="welcome-sub">Control de personal, asistencia y reportes centralizados</p>
         </div>
@@ -92,61 +132,112 @@ input[type=number] {
 <div id="app-container" style="display: none; width: 100%; height: 100vh;">
     <button id="btn-volver-global" class="btn-volver" onclick="volverInicio()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
 
-    <!-- VISTA DASHBOARD EMPLEADO -->
-    <section id="view-dashboard-empleado" class="view-section" style="display: none;">
-        <div class="box glass-card" style="max-width: 450px; width: 100%; position: relative;">
-            <button class="btn-volver" onclick="cerrarSesionEmpleado()" style="position: absolute; top: 15px; left: 15px; color: var(--nava-silver); background: transparent; border: none; font-size: 13px; font-weight: bold; cursor: pointer;"><i class="fas fa-arrow-left"></i> Cerrar Sesión</button>
+    <!-- VISTA DASHBOARD UNIFICADA DEL EMPLEADO -->
+    <section id="view-dashboard-empleado" class="view-section" style="display: none; align-items: flex-start; padding-top: 30px;">
+        <div class="box glass-card" style="max-width: 550px; width: 95%; position: relative; padding: 25px; box-sizing: border-box; overflow: hidden; margin: 0 auto;">
+            <button class="btn-volver" onclick="cerrarSesionEmpleado()" style="position: absolute; top: 18px; left: 18px; color: var(--nava-silver); background: transparent; border: none; font-size: 12px; font-weight: bold; cursor: pointer;"><i class="fas fa-arrow-left"></i> Cerrar Sesión</button>
             
-            <img src="img/logo.png" alt="Logo NAVA" class="logo" style="margin-top: 20px;">
-            <h2 style="color: var(--nava-cyan); margin-bottom: 5px; font-size: 18px;">Bienvenido/a</h2>
-            <h3 id="dash-nombre-empleado" style="color: var(--text-main); margin-bottom: 30px; text-transform: uppercase; font-size: 20px;">NOMBRE</h3>
-            
-            <div class="menu-botones" style="margin: 0 auto; width: 100%;">
-                <button id="btn-modulo-asistencia" class="btn-menu" onclick="navegar('view-asistencia')" style="display: none;">
-                    <i class="fas fa-fingerprint"></i> ASISTENCIA (ENTRADA / SALIDA)
-                </button>
-                <div id="contenedor-almuerzo-empleado" style="margin-top: 10px; display: none;"></div>
-            </div>
-        </div>
-    </section>
+            <button id="btn-refrescar-dash" onclick="refrescarDashboardEmpleado()" style="position: absolute; top: 15px; right: 18px; color: var(--nava-cyan); background: rgba(0, 229, 255, 0.1); border: 1px solid var(--nava-cyan); font-size: 11px; font-weight: bold; padding: 6px 14px; border-radius: 20px; cursor: pointer;" title="Actualizar Vista"><i class="fas fa-sync-alt"></i> Actualizar</button>
 
-    <!-- VISTA ASISTENCIA EMPLEADO -->
-    <section id="view-asistencia" class="view-section" style="display: none;">
-        <div class="box glass-card" style="max-width: 450px; width: 100%;">
-            <img src="img/logo.png" alt="Logo NAVA" class="logo">
-            <h2 style="color: var(--text-main); margin-bottom: 20px;">Registro de Asistencia</h2>
+            <img src="img/logo.png" alt="Logo NAVA" class="logo" style="margin-top: 15px; height: 55px; object-fit: contain;">
+            <h2 style="color: var(--nava-cyan); margin-bottom: 2px; font-size: 15px;">Bienvenido/a</h2>
+            <h3 id="dash-nombre-empleado" style="color: var(--text-main); margin-bottom: 15px; text-transform: uppercase; font-size: 18px;">NOMBRE EMPLEADO</h3>
+            
             <input type="hidden" id="cedula">
-            <div style="text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 3px solid var(--nava-cyan);">
-                <p style="margin-bottom: 4px;"><strong>Nombre:</strong> <span id="txt-nombre" style="color: var(--text-main);"></span></p>
-                <p style="margin-bottom: 4px;"><strong>Ciudad:</strong> <span id="txt-ciudad" style="color: var(--nava-silver);"></span></p>
-                <p style="margin-bottom: 4px;"><strong>Área:</strong> <span id="txt-area" style="color: var(--nava-silver);"></span></p>
-                <p style="font-size:12px; color:var(--text-muted); margin-top: 8px;">Horario asignado: <span id="txt-horario-asignado" style="color:var(--warning);"></span></p>
+            <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted); text-align: center;">
+                Ciudad: <strong id="txt-ciudad" style="color:var(--text-main);">QUITO</strong> | Área: <strong id="txt-area" style="color:var(--text-main);">OFICINA</strong><span id="lbl-contenedor-horario"> | Horario: <strong id="txt-horario-asignado" style="color:var(--warning);">07:30</strong></span>
             </div>
-            <button id="btn-entrada" class="btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="procesarMarcacion('entrada')">Marcar Entrada</button>
-            <button id="btn-salida-bio" class="btn-danger" style="width: 100%; margin-bottom: 15px; display: none;" onclick="procesarMarcacion('salida')">Marcar Salida</button>
-            <div id="info-registros" style="display: none; text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border-left: 3px solid var(--nava-electric-blue);">
-                <p style="margin-bottom: 4px;"><strong>Entrada:</strong> <span id="txt-hora-entrada"></span></p>
-                <p id="caja-atraso" class="dato-oculto alerta-roja" style="margin-bottom: 4px;"><strong>Atraso:</strong> <span id="txt-atraso"></span></p>
-                <p style="margin-bottom: 4px;"><strong>Ubicación Entrada:</strong> <span id="txt-ubicacion-entrada">Pendiente...</span></p>
-                <div id="datos-salida" class="dato-oculto">
-                    <hr style="border-color: var(--border-color); margin: 10px 0;">
-                    <p style="margin-bottom: 4px;"><strong>Salida:</strong> <span id="txt-hora-salida"></span></p>
-                    <p style="margin-bottom: 4px;"><strong>Ubicación Salida:</strong> <span id="txt-ubicacion-salida">Pendiente...</span></p>
-                    <p style="margin-bottom: 4px;"><strong>Tiempo Trabajado:</strong> <span id="txt-trabajado"></span></p>
+
+            <!-- BOTONERA DE ACCIONES (ASISTENCIA Y LUEGO ALMUERZO) -->
+            <div class="grid-acciones-empleado">
+                <!-- MÓDULO ASISTENCIA -->
+                <button id="btn-act-entrada" class="btn-accion-card" onclick="procesarMarcacion('entrada')">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Entrada</span>
+                </button>
+
+                <button id="btn-act-salida" class="btn-accion-card" onclick="procesarMarcacion('salida')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salida</span>
+                </button>
+
+                <!-- MÓDULO ALMUERZO -->
+                <button id="btn-act-ir-almuerzo" class="btn-accion-card" onclick="iniciarProcesoAlmuerzo('SALIDA')">
+                    <i class="fas fa-utensils"></i>
+                    <span>Ir Almuerzo</span>
+                </button>
+                
+                <button id="btn-act-volver-almuerzo" class="btn-accion-card" onclick="iniciarProcesoAlmuerzo('RETORNO')">
+                    <i class="fas fa-undo"></i>
+                    <span>Volver Almuerzo</span>
+                </button>
+            </div>
+
+            <!-- TARJETAS DE RESUMEN SEPARADAS Y PROPORCIONADAS -->
+            <div style="width: 100%; box-sizing: border-box;">
+                
+                <!-- 1. RESUMEN DE ASISTENCIA -->
+                <div id="resumen-asistencia-block" class="box-resumen-seccion">
+                    <h4 style="color: var(--nava-cyan); font-size: 12px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-fingerprint"></i> Resumen de Asistencia
+                    </h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Entrada:</span>
+                        <span id="txt-hora-entrada" style="color: var(--text-main); font-weight: bold;">--:--</span>
+                    </div>
+                    <div id="caja-atraso" style="display: none; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--danger);">Atraso:</span>
+                        <span id="txt-atraso" style="color: var(--danger); font-weight: bold;">--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Ubicación Entrada:</span>
+                        <span id="txt-ubicacion-entrada" style="color: var(--nava-cyan);">Pendiente...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Salida:</span>
+                        <span id="txt-hora-salida" style="color: var(--text-main); font-weight: bold;">--:--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Ubicación Salida:</span>
+                        <span id="txt-ubicacion-salida" style="color: var(--nava-cyan);">Pendiente...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.06);">
+                        <span style="color: var(--text-muted);">Tiempo Trabajado:</span>
+                        <span id="txt-trabajado" style="color: var(--success); font-weight: bold;">--</span>
+                    </div>
                 </div>
+
+                <!-- 2. RESUMEN DE ALMUERZO -->
+                <div id="resumen-almuerzo-block" class="box-resumen-seccion">
+                    <h4 style="color: var(--warning); font-size: 12px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-utensils"></i> Resumen de Almuerzo
+                    </h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Inicio Almuerzo:</span>
+                        <span id="txt-alm-inicio" style="color: var(--text-main); font-weight: bold;">--:--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">Fin Almuerzo:</span>
+                        <span id="txt-alm-fin" style="color: var(--text-main); font-weight: bold;">--:--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.06);">
+                        <span style="color: var(--text-muted);">Estado Almuerzo:</span>
+                        <span id="txt-alm-estado" style="color: var(--warning); font-weight: bold;">Sin registrar</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- VISTA PANEL ADMINISTRADOR -->
+    <!-- VISTA PANEL ADMINISTRADOR ERP -->
     <section id="view-admin" class="view-section" style="display: none; padding: 0;">
         <div class="admin-layout">
-            
             <aside class="admin-sidebar glass-card">
                 <button class="btn-volver-admin" onclick="volverInicio()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
                 <div class="sidebar-logo">
                     <img src="img/logo.png" alt="Logo NAVA CORP" class="logo" style="margin-bottom: 10px;">
-                    <h2 style="font-size: 16px; text-align: center; color: var(--text-main); letter-spacing: 1px;">PANEL DE ADMINISTRADOR</h2>
+                    <h2 style="font-size: 16px; text-align: center; color: var(--text-main); letter-spacing: 1px;">ERP ADMIN</h2>
                 </div>
                 <nav class="sidebar-nav">
                     <button id="nav-monitores" class="nav-btn active" onclick="switchAdminTab('monitores')"><i class="fas fa-tv"></i> Monitores en Vivo</button>
@@ -244,8 +335,6 @@ input[type=number] {
                     <h3 style="color: var(--nava-cyan); font-size: 16px; margin-bottom: 20px;"><i class="fas fa-cogs"></i> Parámetros del Sistema</h3>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                        
-                        <!-- Tarjeta 1: Método Almuerzos -->
                         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
                             <h4 style="color: var(--warning); margin-bottom: 12px; font-size: 14px;"><i class="fas fa-utensils"></i> Validación de Almuerzos</h4>
                             <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px; line-height: 1.4;">Selecciona el método activo de control para los dispositivos.</p>
@@ -255,7 +344,6 @@ input[type=number] {
                             </select>
                         </div>
 
-                        <!-- Tarjeta 2: Áreas Dinámicas -->
                         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
                             <h4 style="color: var(--nava-electric-light); margin-bottom: 12px; font-size: 14px;"><i class="fas fa-sitemap"></i> Departamentos / Áreas</h4>
                             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -265,7 +353,6 @@ input[type=number] {
                             <ul id="lista-areas-config" style="list-style: none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto;"></ul>
                         </div>
 
-                        <!-- Tarjeta 3: Seguridad Admin -->
                         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <h4 style="color: var(--danger); margin-bottom: 12px; font-size: 14px;"><i class="fas fa-shield-alt"></i> Seguridad Administrador</h4>
@@ -273,7 +360,6 @@ input[type=number] {
                             </div>
                             <button class="btn-cancel" onclick="abrirModalCambiarPassword()" style="border-color: var(--warning); color: var(--warning); width: 100%; margin: 0; padding: 10px; font-size: 12px;"><i class="fas fa-key"></i> Cambiar Clave Admin</button>
                         </div>
-
                     </div>
                 </div>
 
@@ -283,7 +369,6 @@ input[type=number] {
 </div>
 
 <!-- ================= MODALES FLOTANTES ================= -->
-<!-- Modal: Auth Admin -->
 <div id="modal-auth-admin" class="modal-overlay" style="display: none;">
     <div class="modal-caja glass-card" style="max-width: 400px;">
         <h3 style="color: var(--nava-cyan); margin-bottom: 15px;"><i class="fas fa-lock"></i> Acceso Restringido</h3>
@@ -295,7 +380,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal: Cambiar Clave Admin -->
 <div id="modal-cambiar-password" class="modal-overlay" style="display: none;">
     <div class="modal-caja glass-card" style="max-width: 400px;">
         <h3 style="color: var(--warning); margin-bottom: 15px;"><i class="fas fa-key"></i> Actualizar Credenciales</h3>
@@ -307,7 +391,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal Maestro: Ficha del Empleado -->
 <div id="modal-ficha-empleado" class="modal-overlay" style="display:none; z-index: 1200;">
     <div class="modal-caja glass-card" style="max-width: 650px; width: 90%; box-sizing: border-box; overflow: hidden; padding: 25px;">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
@@ -318,7 +401,6 @@ input[type=number] {
         <div style="display: flex; flex-direction: column; gap: 20px; text-align: left; width: 100%; box-sizing: border-box;">
             <input type="hidden" id="ficha-accion" value="nuevo">
 
-            <!-- 1. DATOS PERSONALES -->
             <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
                 <h4 style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; margin: 0 0 12px 0; letter-spacing: 1px;">1. Datos Personales</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box;">
@@ -337,7 +419,6 @@ input[type=number] {
                 </div>
             </div>
 
-            <!-- 2. DATOS OPERATIVOS -->
             <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
                 <h4 style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; margin: 0 0 12px 0; letter-spacing: 1px;">2. Datos Operativos</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box;">
@@ -356,7 +437,6 @@ input[type=number] {
                 </div>
             </div>
 
-            <!-- 3. SEGURIDAD Y PERMISOS -->
             <div style="border-left: 3px solid var(--danger); padding-left: 12px;">
                 <h4 style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; margin: 0 0 12px 0; letter-spacing: 1px;">3. Seguridad y Permisos</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box; align-items: start;">
@@ -378,7 +458,6 @@ input[type=number] {
                 </div>
             </div>
 
-            <!-- BOTONES -->
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.08);">
                 <button class="btn-cancel" onclick="cerrarModal('modal-ficha-empleado')" style="padding: 8px 18px; font-size: 12px; border-radius: 8px;">Cancelar</button>
                 <button class="btn-primary" onclick="guardarFichaEmpleado()" style="padding: 8px 22px; font-size: 12px; border-radius: 8px; margin: 0;">Guardar Empleado</button>
@@ -387,7 +466,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal: Corregir Marcaciones -->
 <div id="modal-corregir-bio" class="modal-overlay" style="display:none; z-index: 1200;">
     <div class="modal-caja glass-card" style="max-width: 850px; width: 95%;">
         <div class="modal-header"><h3>Corregir Registros de Asistencia</h3><button class="close-btn" onclick="cerrarModal('modal-corregir-bio')">×</button></div>
@@ -409,7 +487,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal: Token Almuerzo -->
 <div id="modal-token-almuerzo" class="modal-overlay" style="display: none; z-index: 1200;">
     <div class="modal-caja glass-card" style="max-width: 400px; width: 95%;">
         <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
@@ -422,7 +499,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal: Escáner QR -->
 <div id="modal-escaner-qr" class="modal-overlay" style="display: none; z-index: 1300;">
     <div class="modal-caja glass-card" style="max-width: 450px; width: 95%;">
         <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
@@ -435,7 +511,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modal: Imprimir QR -->
 <div id="modal-imprimir-qr" class="modal-overlay" style="display: none; z-index: 1300;">
     <div class="modal-caja glass-card" style="max-width: 400px; width: 95%;">
         <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
@@ -451,7 +526,6 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Modales de Alerta/Confirmación -->
 <div id="modal-alerta" class="modal-overlay" style="display: none; z-index: 2000;">
     <div class="modal-caja glass-card" style="max-width: 380px; border-top: 4px solid var(--primary);">
         <h3 id="alerta-titulo" style="margin-top: 0; font-size: 16px;">Aviso</h3>
