@@ -535,3 +535,52 @@ tr:hover { background: rgba(255,255,255,0.02); }
     border-radius: 18px;
     box-shadow: none;
 }
+/* =====================================================================
+   CORRECCIÓN VISUAL GLOBAL: UNIFICACIÓN DE BORDES (MODO CLARO Y OSCURO)
+   ===================================================================== */
+
+/* 1. Forma de pastilla (999px) para TODOS los botones y etiquetas */
+.btn-menu, .btn-outline, .btn-cancel, .btn-success, .btn-danger, 
+.btn-volver-web, .btn-primary, .btn-export, .nav-btn, 
+.badge-status, .status-count, .time-badge {
+    border-radius: 999px !important;
+}
+
+/* 2. Forma redondeada (14px) para TODOS los inputs y selectores */
+select, .input-dark, input[type="text"], input[type="number"], 
+input[type="password"], input[type="time"], input[type="date"] {
+    border-radius: 14px !important;
+}
+
+/* Forzar ajuste proporcional en modales */
+#modal-ficha-empleado .modal-caja {
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+#modal-ficha-empleado input, 
+#modal-ficha-empleado select {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}/* Forzar que el ícono del calendario nativo sea blanco/visible en campos oscuros */
+.input-dark::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.8);
+    cursor: pointer;
+}
+
+/* ===== COMPATIBILIDAD DE CALENDARIO PARA AMBOS TEMAS ===== */
+
+/* 1. Por defecto (Modo Claro): Ícono oscuro visible sobre fondo claro */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+/* 2. Modo Oscuro: Invierte a blanco solo cuando la app tiene el tema oscuro activo */
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+.dark-theme input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.8);
+    opacity: 1;
+}
