@@ -10,7 +10,12 @@ let timerEnVivo = null, empleadosEnAlmuerzo = [], registrosAlmGlobales = [], emp
 let idDocumentoFirebase = null, horaEntradaGuardada = null;
 let timerAlmuerzoEmpleado = null;
 
-// ================= FUNCIONES DE UTILIDAD =================
+// Variable global para recordar si usamos TOKEN o QR
+window.modoAlmuerzoGlobal = 'TOKEN'; 
+
+// ==========================================================================
+//   1. FUNCIONES DE UTILIDAD GLOBALES
+// ==========================================================================
 window.cerrarModal = function(id) { document.getElementById(id).style.display = 'none'; };
 
 window.mostrarAlertaCustom = function(mensaje, tipo = 'warning') {
@@ -57,7 +62,9 @@ function formatoHorasMinutos(minutosTotales) {
     return `${restM} minutos`;
 }
 
-// ================= ENRUTAMIENTO =================
+// ==========================================================================
+//   2. ENRUTAMIENTO Y NAVEGACIÓN
+// ==========================================================================
 window.onload = function() { history.replaceState({ vista: 'inicio' }, "", window.location.pathname + window.location.search); };
 
 window.navegar = function(vistaId, pushToHistory = true) {
@@ -82,7 +89,9 @@ window.addEventListener('popstate', (event) => {
     else { document.getElementById('app-container').style.display = 'none'; document.getElementById('pantalla-inicio').style.display = 'flex'; }
 });
 
-// ================= SEGURIDAD ADMIN =================
+// ==========================================================================
+//   3. SEGURIDAD PANEL ADMIN
+// ==========================================================================
 window.abrirModalAuth = function() { document.getElementById('modal-auth-admin').style.display = 'flex'; document.getElementById('admin-password-input').value = ""; };
 
 window.validarAdmin = async function() {
@@ -115,7 +124,9 @@ window.switchAdminTab = function(tabName) {
     else { title.innerHTML = '<i class="fas fa-fingerprint"></i> Gestión de Asistencia'; actualizarListasEnVivoAsistencia(); }
 };
 
-// ================= LOGIN Y SESIÓN DE EMPLEADOS =================
+// ==========================================================================
+//   4. LOGIN Y SESIÓN DE EMPLEADOS
+// ==========================================================================
 window.loginEmpleado = async function() {
     const inputCedula = document.getElementById('login-cedula').value.trim();
     if(!inputCedula) return mostrarAlertaCustom("Por favor, ingrese su número de cédula.", "warning");
@@ -177,21 +188,29 @@ window.cerrarSesionEmpleado = function() {
     volverInicio();
 };
 
-// ================= SISTEMA DINÁMICO DE ALMUERZO =================
+// ==========================================================================
+//   5. SISTEMA DE ALMUERZO (ESTADO DEL EMPLEADO)
+// ==========================================================================
 window.verificarEstadoAlmuerzoEmpleado = async function(nombre) {
     const contenedor = document.getElementById('contenedor-almuerzo-empleado');
     contenedor.innerHTML = '<p style="color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Cargando estado...</p>';
     if(timerAlmuerzoEmpleado) clearInterval(timerAlmuerzoEmpleado);
 
     try {
+        // Consultar el modo de almuerzo (Token o QR) elegido por el Admin
+        const snapAjustes = await getDoc(doc(db, "configuracion", "ajustes_sistema"));
+        if(snapAjustes.exists()) window.modoAlmuerzoGlobal = snapAjustes.data().modo_almuerzo || 'TOKEN';
+
         const ref = doc(db, "registros", nombre + "_" + hoyStr);
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
-            contenedor.innerHTML = `<button class="btn-menu" style="border-color: var(--warning); color: var(--warning); width: 100%;" onclick="abrirModalToken('SALIDA')"><i class="fas fa-utensils"></i> REGISTRAR SALIDA ALMUERZO</button>`;
+            // El empleado no ha salido a almorzar
+            contenedor.innerHTML = `<button class="btn-menu" style="border-color: var(--warning); color: var(--warning); width: 100%;" onclick="iniciarProcesoAlmuerzo('SALIDA')"><i class="fas fa-utensils"></i> REGISTRAR SALIDA ALMUERZO</button>`;
         } else {
             const d = snap.data();
             if (d.salida && !d.regreso) {
+                // El empleado está en su hora de almuerzo (Muestra cronómetro)
                 const salidaMs = d.salida.seconds * 1000;
                 const horaSalidaText = new Date(salidaMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
@@ -203,10 +222,10 @@ window.verificarEstadoAlmuerzoEmpleado = async function(nombre) {
                         <p id="lbl-tiempo-crono" style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px; text-transform: uppercase;">Tiempo Restante</p>
                         <div id="crono-empleado" style="font-size: 38px; font-weight: 800; color: var(--warning); font-variant-numeric: tabular-nums; margin-bottom: 20px; text-shadow: 0 0 15px rgba(245,158,11,0.3);">60:00</div>
                         
-                        <button class="btn-primary" style="width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); font-size: 14px;" onclick="abrirModalToken('RETORNO')"><i class="fas fa-walking"></i> MARCAR REGRESO</button>
+                        <button class="btn-primary" style="width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); font-size: 14px;" onclick="iniciarProcesoAlmuerzo('RETORNO')"><i class="fas fa-walking"></i> MARCAR REGRESO</button>
                     </div>`;
 
-                // CRONÓMETRO DESCENDENTE DESDE 60 MINUTOS
+                // Cronómetro
                 timerAlmuerzoEmpleado = setInterval(() => {
                     const diffMs = Date.now() - salidaMs;
                     const restanteMs = (60 * 60 * 1000) - diffMs;
@@ -235,6 +254,7 @@ window.verificarEstadoAlmuerzoEmpleado = async function(nombre) {
                 }, 1000);
 
             } else if (d.salida && d.regreso) {
+                // Almuerzo completado (Muestra resumen)
                 const salidaMs = d.salida.seconds * 1000; const regresoMs = d.regreso.seconds * 1000;
                 const horaSalidaText = new Date(salidaMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const horaRegresoText = new Date(regresoMs).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -262,6 +282,20 @@ window.verificarEstadoAlmuerzoEmpleado = async function(nombre) {
     } catch (error) { contenedor.innerHTML = '<p style="color:var(--danger);">Error al cargar estado.</p>'; }
 };
 
+// ==========================================================================
+//   5.1 LÓGICA DEL SISTEMA DUAL (TOKENS Y QR)
+// ==========================================================================
+
+/* Enrutador principal: Decide qué pantalla abrir según la elección del Admin */
+window.iniciarProcesoAlmuerzo = function(tipo) {
+    if(window.modoAlmuerzoGlobal === 'QR') {
+        abrirEscanerQR(tipo); // Activa la cámara del empleado
+    } else {
+        abrirModalToken(tipo); // Pide el Token tradicional
+    }
+};
+
+/* --- MÉTODO 1: VALIDACIÓN POR TOKEN (Clásico) --- */
 window.abrirModalToken = function(tipo) {
     window.estadoAlmuerzoActual = tipo; 
     const titulo = document.getElementById('titulo-token-almuerzo'); const desc = document.getElementById('desc-token-almuerzo'); const btnValidar = document.getElementById('btn-validar-token');
@@ -300,12 +334,77 @@ window.validarTokenYRegistrar = async function() {
             mostrarAlertaCustom("¡Retorno registrado con éxito!", "success");
         }
         cerrarModal('modal-token-almuerzo'); verificarEstadoAlmuerzoEmpleado(nombre);
-
     } catch (error) { mostrarAlertaCustom("Error de conexión.", "error"); }
     btn.disabled = false; btn.innerHTML = btnOriginalText;
 };
 
-// ================= ASISTENCIA BIOMÉTRICA EXACTA =================
+/* --- MÉTODO 2: VALIDACIÓN POR QR (Escáner del Empleado) --- */
+let escanerActivo = null;
+
+window.abrirEscanerQR = function(tipo) {
+    window.estadoAlmuerzoActual = tipo; // Guardamos si es SALIDA o RETORNO
+    document.getElementById('lbl-tipo-escaner').innerText = tipo;
+    document.getElementById('modal-escaner-qr').style.display = 'flex';
+    
+    // Iniciar la librería de cámara en el contenedor div
+    escanerActivo = new Html5Qrcode("lector-camara-qr");
+    const configEscaner = { fps: 10, qrbox: { width: 250, height: 250 } };
+    
+    // facingMode environment es para usar la cámara trasera por defecto
+    escanerActivo.start({ facingMode: "environment" }, configEscaner, onEscaneoExitoso)
+    .catch((err) => {
+        mostrarAlertaCustom("No se pudo iniciar la cámara. Verifica los permisos del navegador.", "error");
+    });
+};
+
+window.cerrarEscanerQR = function() {
+    if(escanerActivo) {
+        escanerActivo.stop().then(() => {
+            escanerActivo.clear();
+        }).catch(err => console.log(err));
+    }
+    cerrarModal('modal-escaner-qr');
+};
+
+/* Disparador automático cuando la cámara lee el QR exitosamente */
+async function onEscaneoExitoso(textoEscaneado, decodificado) {
+    // 1. Apagar cámara para evitar doble lectura
+    if(escanerActivo) {
+        await escanerActivo.stop();
+        escanerActivo.clear();
+    }
+    document.getElementById('modal-escaner-qr').style.display = 'none';
+    
+    // 2. Verificar la carga de seguridad (que el QR sea el de HOY)
+    const payloadEsperado = "ITSACOURIER-ALMUERZO-" + hoyStr;
+    
+    if (textoEscaneado !== payloadEsperado) {
+        mostrarAlertaCustom("Código QR inválido o caducado. Asegúrate de escanear el papel del día de hoy.", "error");
+        return;
+    }
+    
+    // 3. Procesar el registro en la base de datos
+    try {
+        const nombre = document.getElementById('dash-nombre-empleado').innerText; 
+        const cedula = document.getElementById('cedula').value; 
+        const ref = doc(db, "registros", nombre + "_" + hoyStr);
+
+        if (window.estadoAlmuerzoActual === "SALIDA") {
+            await setDoc(ref, { nombre: nombre, fecha: hoyStr, salida: serverTimestamp(), regreso: null, cedula: cedula });
+            mostrarAlertaCustom("¡Salida registrada mediante QR! Buen provecho.", "success");
+        } else if (window.estadoAlmuerzoActual === "RETORNO") {
+            await updateDoc(ref, { regreso: serverTimestamp() });
+            mostrarAlertaCustom("¡Retorno registrado mediante QR con éxito!", "success");
+        }
+        verificarEstadoAlmuerzoEmpleado(nombre); // Recargar cronómetro
+    } catch (error) { 
+        mostrarAlertaCustom("Error de conexión al guardar el registro.", "error"); 
+    }
+}
+
+// ==========================================================================
+//   6. ASISTENCIA BIOMÉTRICA EXACTA (GPS)
+// ==========================================================================
 async function obtenerHoraDeLaWeb() {
     try {
         const respuesta = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=America/Guayaquil');
@@ -458,7 +557,67 @@ window.procesarMarcacion = async function(tipo) {
     } catch (error) { mostrarAlertaCustom("Ocurrió un error al guardar los datos.", "error"); document.getElementById(botonActivo).disabled = false; }
 };
 
-// ================= DASHBOARD ADMIN: ALMUERZOS =================
+// ==========================================================================
+//   7. DASHBOARD ADMIN: ALMUERZOS Y CONTROL DE MODOS
+// ==========================================================================
+
+/* --- Selector de Modos en el Panel Admin --- */
+window.cambiarModoAlmuerzoAdmin = async function() {
+    const modoSeleccionado = document.getElementById('selector-modo-almuerzo').value;
+    const btnToken = document.getElementById('btn-header-token');
+    const btnQr = document.getElementById('btn-header-qr');
+    
+    if(modoSeleccionado === 'QR') {
+        btnToken.style.display = 'none'; btnQr.style.display = 'block';
+    } else {
+        btnToken.style.display = 'block'; btnQr.style.display = 'none';
+    }
+    
+    // Guardar preferencia general en Firebase para que los empleados la lean
+    try {
+        await setDoc(doc(db, "configuracion", "ajustes_sistema"), { modo_almuerzo: modoSeleccionado }, { merge: true });
+        mostrarAlertaCustom(`Validación cambiada a modo: ${modoSeleccionado}.`, "success");
+    } catch(e) { console.error(e); }
+};
+
+/* --- Ventana e Impresión del QR del Día --- */
+let codigoQRGenerado = null;
+window.abrirModalImprimirQR = function() {
+    document.getElementById('modal-imprimir-qr').style.display = 'flex';
+    document.getElementById('lbl-fecha-qr').innerText = hoyStr; 
+    
+    const contenedor = document.getElementById('contenedor-qr-imprimir');
+    contenedor.innerHTML = ""; 
+    const textoSecreto = "ITSACOURIER-ALMUERZO-" + hoyStr;
+    
+    codigoQRGenerado = new QRCode(contenedor, {
+        text: textoSecreto, width: 250, height: 250,
+        colorDark : "#000000", colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+};
+
+window.ejecutarImpresionQR = function() {
+    const canvas = document.getElementById("contenedor-qr-imprimir").querySelector("canvas");
+    if (canvas) {
+        const imagenBase64 = canvas.toDataURL("image/png");
+        let ventana = window.open('', '_blank', 'width=800,height=800');
+        ventana.document.write(`
+            <html>
+                <head><title>QR Almuerzo ITSACOURIER</title></head>
+                <body style="text-align: center; font-family: sans-serif; padding-top: 50px;">
+                    <h1 style="font-size: 30px; margin-bottom: 5px;">CONTROL DE ALMUERZO</h1>
+                    <p style="font-size: 18px; color: #555; margin-bottom: 30px;">Válido únicamente para la fecha: <strong>${hoyStr}</strong></p>
+                    <img src="${imagenBase64}" style="width: 400px; height: 400px; border: 2px solid #000; padding: 20px; border-radius: 10px;" />
+                    <p style="margin-top: 30px; font-weight: bold;">Escanea este código desde el portal ITSACOURIER con tu celular.</p>
+                </body>
+            </html>
+        `);
+        ventana.document.close();
+        setTimeout(() => { ventana.focus(); ventana.print(); ventana.close(); cerrarModal('modal-imprimir-qr'); }, 500);
+    }
+};
+
 function formatearHora(timestamp) { if (!timestamp || !timestamp.seconds) return "-"; return new Date(timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
 function calcularTiempo(salida, regreso) {
   if (!salida || !regreso) return { texto: "-", exceso: false };
@@ -467,21 +626,36 @@ function calcularTiempo(salida, regreso) {
   return { texto: formatoHorasMinutos(minutos), exceso: minutos > 60 };
 }
 
-// BOTON ACTUALIZAR FORZADO
 window.inicializarDashboardAlmuerzos = async function() {
   const btns = document.querySelectorAll('button[onclick="inicializarDashboardAlmuerzos()"]');
   btns.forEach(b => { b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...'; b.disabled = true; });
 
+  // 1. Cargar el modo de validación elegido previamente por el admin (QR o Token)
+  try {
+      const snapAjustes = await getDoc(doc(db, "configuracion", "ajustes_sistema"));
+      if(snapAjustes.exists() && snapAjustes.data().modo_almuerzo) {
+          const modo = snapAjustes.data().modo_almuerzo;
+          const selector = document.getElementById('selector-modo-almuerzo');
+          if(selector) {
+              selector.value = modo;
+              if(modo === 'QR') { document.getElementById('btn-header-token').style.display = 'none'; document.getElementById('btn-header-qr').style.display = 'block'; } 
+              else { document.getElementById('btn-header-token').style.display = 'block'; document.getElementById('btn-header-qr').style.display = 'none'; }
+          }
+      }
+  } catch (e) { console.log("Configuración inicial de modo almuerzo no encontrada."); }
+
+  // 2. Cargar listas de empleados
   const ref = doc(db, "configuracion", "empleados");
   const snap = await getDoc(ref);
   if (snap.exists()) empleadosAlmDb = snap.data(); else empleadosAlmDb = { PLAYA: [], FACTURACION: [], OFICINA: [] };
   cargarFiltroEmpleadosAlmuerzo(); 
+  
   const querySnapshot = await getDocs(collection(db, "registros"));
   registrosAlmGlobales = []; querySnapshot.forEach(d => registrosAlmGlobales.push(d.data()));
   actualizarListasEnVivoAlmuerzo();
 
   btns.forEach(b => { b.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar'; b.disabled = false; });
-}
+};
 
 function actualizarListasEnVivoAlmuerzo() {
   const listPendientes = document.getElementById("list-pendientes"); const listAlmuerzo = document.getElementById("list-almuerzo"); const listCompletados = document.getElementById("list-completados");
@@ -509,7 +683,6 @@ function actualizarListasEnVivoAlmuerzo() {
   actualizarRelojesAlmuerzo(); timerEnVivo = setInterval(actualizarRelojesAlmuerzo, 1000); 
 }
 
-// CRONOMETRO DESCENDENTE ADMIN
 function actualizarRelojesAlmuerzo() {
     empleadosEnAlmuerzo.forEach(emp => {
         const el = document.getElementById(`timer-${emp.nombre}`);
@@ -566,6 +739,21 @@ window.exportarAlmuerzos = async function () {
     const libro = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(libro, hoja, "Almuerzos"); XLSX.writeFile(libro, "Reporte_Almuerzos.xlsx");
 };
 
+async function refrescarAlmuerzos(mensajeExito) {
+    try {
+        const snap = await getDoc(doc(db, "configuracion", "empleados"));
+        if (snap.exists()) empleadosAlmDb = snap.data();
+    } catch (e) {
+        mostrarAlertaCustom("Se guardó, pero no se pudo refrescar la lista. Vuelva a abrir Gestión de Personal.", 'warning');
+        return;
+    }
+    const modal = document.getElementById('modal-gestion-almuerzos');
+    if (modal && modal.style.display === 'flex') abrirModalAlmuerzos();
+    if (document.getElementById('buscar-nombre')) cargarFiltroEmpleadosAlmuerzo();
+    if (document.getElementById('list-pendientes')) actualizarListasEnVivoAlmuerzo();
+    if (mensajeExito) mostrarAlertaCustom(mensajeExito, 'success');
+}
+
 window.abrirModalAlmuerzos = function() {
     document.getElementById('modal-gestion-almuerzos').style.display = 'flex'; 
     const grid = document.getElementById("grid-empleados-alm"); grid.innerHTML = "";
@@ -609,7 +797,10 @@ window.guardarEdicionAlm = async function() {
         else { updates[oldArea] = arrayRemove(nombreViejo); updates[newArea] = arrayUnion(nombreNuevo); }
         if (nombreViejo !== nombreNuevo) updates[`cedulas.${nombreViejo}`] = deleteField();
         if (cedula) updates[`cedulas.${nombreNuevo}`] = cedula;
-        await updateDoc(ref, updates); cerrarModal('modal-editar-alm'); location.reload(); 
+        await updateDoc(ref, updates);
+        cerrarModal('modal-editar-alm');
+        const aviso = (oldArea === newArea) ? `Datos de ${nombreNuevo} actualizados.` : `${nombreNuevo} fue movido a ${newArea === "FACTURACION" ? "FACTURACIÓN" : newArea}.`;
+        await refrescarAlmuerzos(aviso);
     } catch (e) { mostrarAlertaCustom("Error al actualizar.", "error"); }
 };
 
@@ -617,14 +808,19 @@ window.agregarEmpleadoAlmuerzo = async function() {
     const area = document.getElementById("area-gestion").value; const cedula = document.getElementById("nuevo-cedula-alm").value.trim(); const nombre = document.getElementById("nuevo-empleado-alm").value.trim().toUpperCase();
     if(!nombre) return mostrarAlertaCustom("El Nombre es obligatorio.", 'warning');
     const updates = { [area]: arrayUnion(nombre) }; if(cedula) updates[`cedulas.${nombre}`] = cedula;
-    await updateDoc(doc(db, "configuracion", "empleados"), updates); location.reload(); 
+    await updateDoc(doc(db, "configuracion", "empleados"), updates);
+    document.getElementById("nuevo-cedula-alm").value = "";
+    document.getElementById("nuevo-empleado-alm").value = "";
+    document.getElementById("nuevo-empleado-alm").focus();
+    await refrescarAlmuerzos(`${nombre} fue agregado a ${area === "FACTURACION" ? "FACTURACIÓN" : area}.`);
 };
 
 window.eliminarEmpleadoAlmuerzo = function(area, index) {
     const nombreStr = empleadosAlmDb[area][index];
     mostrarConfirmacionCustom(`¿Eliminar a ${nombreStr}?`, async () => {
         const updates = { [area]: arrayRemove(nombreStr) }; updates[`cedulas.${nombreStr}`] = deleteField();
-        await updateDoc(doc(db, "configuracion", "empleados"), updates); location.reload();
+        await updateDoc(doc(db, "configuracion", "empleados"), updates);
+        await refrescarAlmuerzos(`${nombreStr} fue eliminado del listado.`);
     }, true);
 };
 
@@ -636,10 +832,13 @@ window.drop = async function(event, targetArea, el) {
     event.preventDefault(); el.classList.remove('drag-over'); if(!dragInfo) return;
     const { area: oldArea, index } = dragInfo; dragInfo = null; if(oldArea === targetArea) return; 
     const nombreStr = empleadosAlmDb[oldArea][index]; const ref = doc(db, "configuracion", "empleados");
-    await updateDoc(ref, { [oldArea]: arrayRemove(nombreStr), [targetArea]: arrayUnion(nombreStr) }); location.reload();
+    await updateDoc(ref, { [oldArea]: arrayRemove(nombreStr), [targetArea]: arrayUnion(nombreStr) });
+    await refrescarAlmuerzos();
 };
 
-// ================= DASHBOARD ADMIN: ASISTENCIA =================
+// ==========================================================================
+//   8. DASHBOARD ADMIN: ASISTENCIA BIOMÉTRICA
+// ==========================================================================
 window.abrirModalBioPersonal = async function() {
     document.getElementById('modal-gestion-bio').style.display = 'flex';
     document.getElementById('tabla-personal-bio').innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Cargando personal...</td></tr>';
@@ -692,7 +891,6 @@ window.eliminarEmpleadoBio = function(cedula, nombre) {
     }, true);
 };
 
-// BOTON ACTUALIZAR FORZADO ASISTENCIA
 window.actualizarListasEnVivoAsistencia = async function() {
     const btns = document.querySelectorAll('button[onclick="actualizarListasEnVivoAsistencia()"]');
     btns.forEach(b => { b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...'; b.disabled = true; });

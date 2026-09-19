@@ -263,3 +263,275 @@ tr:hover { background: rgba(255,255,255,0.02); }
 :root[data-theme="light"] .welcome-eyebrow { background: #ffffff; }
 :root[data-theme="light"] .logo-gigante, :root[data-theme="light"] .logo { border-radius: 14px; }
 :root[data-theme="light"] .firma-autor { filter: contrast(1.7) brightness(1.12); mix-blend-mode: multiply; opacity: 0.95; }
+
+/* =====================================================================
+   MODO CLARO · pantallas nuevas
+   (login por cédula, dashboard del empleado, tokens, editor de almuerzos)
+   ===================================================================== */
+
+/* Paneles con fondo oscuro escrito directo en el HTML */
+:root[data-theme="light"] #info-registros,
+:root[data-theme="light"] #view-asistencia div[style*="rgba(0,0,0,0.4)"],
+:root[data-theme="light"] #view-dashboard-empleado div[style*="rgba(0,0,0,0.4)"] {
+    background: #f3f7fd !important;
+}
+:root[data-theme="light"] #login-cedula,
+:root[data-theme="light"] #input-token-almuerzo,
+:root[data-theme="light"] #edit-alm-cedula,
+:root[data-theme="light"] #edit-alm-nombre { background: #ffffff; color: var(--text-main); }
+
+/* Cronómetro y textos grandes del dashboard */
+:root[data-theme="light"] .timer { color: var(--text-main); }
+
+/* Botón de cerrar sesión del empleado */
+:root[data-theme="light"] #view-dashboard-empleado .btn-volver { color: var(--text-muted); }
+:root[data-theme="light"] #view-dashboard-empleado .btn-volver:hover { color: var(--nava-cyan); }
+
+/* Modal de token: el input grande queda legible sobre blanco */
+:root[data-theme="light"] #modal-token-almuerzo .modal-caja { border-top: 4px solid var(--warning); }
+
+/* Filas del listado de almuerzos (el nombre y la cédula van con estilo en línea,
+   por eso se apoyan en las variables y cambian solas) */
+:root[data-theme="light"] .area-list li i.fa-pen { color: #8a97ab !important; }
+
+/* =====================================================================
+   MODO OSCURO · MISMO LENGUAJE VISUAL QUE EL SITIO WEB
+   Superficies planas sobre negro zinc, bordes finos, esquinas muy
+   redondeadas y acento cian. Nada de vidrio ni de relieve.
+   ===================================================================== */
+:root:not([data-theme="light"]) {
+    --nava-carbon: #09090b;   /* zinc-950 · fondo   */
+    --nava-steel:  #18181b;   /* zinc-900 · tarjeta */
+    --nava-silver: #a1a1aa;   /* zinc-400           */
+
+    --z900: 24,24,27;
+    --z800: 39,39,42;
+
+    --nava-cyan:           #22d3ee;
+    --nava-electric-light: #22d3ee;
+    --nava-electric-blue:  #0891b2;
+    --primary: #22d3ee;
+    --primary-hover: #0891b2;
+
+    --success: #4ade80;
+    --warning: #facc15;
+    --danger:  #fb7185;
+
+    --bg-body:      #09090b;
+    --text-main:    #fafafa;   /* zinc-50  */
+    --text-muted:   #a1a1aa;   /* zinc-400 */
+    --border-color: #27272a;   /* zinc-800 */
+}
+
+:root:not([data-theme="light"]) body { background: #09090b; }
+
+:root:not([data-theme="light"]) ::-webkit-scrollbar-track { background: transparent; }
+:root:not([data-theme="light"]) ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+:root:not([data-theme="light"]) ::-webkit-scrollbar-thumb:hover { background: var(--nava-cyan); }
+
+/* ---------- TARJETAS ---------- */
+:root:not([data-theme="light"]) .glass-card,
+:root:not([data-theme="light"]) .modal-caja,
+:root:not([data-theme="light"]) .area-card,
+:root:not([data-theme="light"]) .status-card,
+:root:not([data-theme="light"]) .table-container {
+    background: rgba(var(--z900), 0.4);
+    border: 1px solid rgba(var(--z800), 0.6);
+    border-radius: 24px;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+:root:not([data-theme="light"]) .modal-caja { background: #18181b; border-radius: 28px; }
+:root:not([data-theme="light"]) .admin-dashboard { border-top: 1px solid rgba(var(--z800),0.6); }
+:root:not([data-theme="light"]) .status-card { border-top: 1px solid rgba(var(--z800),0.6); transition: border-color .3s, transform .3s; }
+:root:not([data-theme="light"]) .status-card:hover { border-color: rgba(34,211,238,0.3); transform: translateY(-4px); }
+:root:not([data-theme="light"]) .status-card.pendientes  .status-header h3 { color: var(--nava-cyan); }
+:root:not([data-theme="light"]) .status-card.en-almuerzo .status-header h3 { color: var(--warning); }
+:root:not([data-theme="light"]) .status-card.completados .status-header h3 { color: var(--success); }
+
+:root:not([data-theme="light"]) .stat {
+    background: #09090b;
+    border: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* ---------- ZONAS INTERNAS ---------- */
+:root:not([data-theme="light"]) .gestion-controls,
+:root:not([data-theme="light"]) .search-section,
+:root:not([data-theme="light"]) .module-container {
+    background: rgba(var(--z900), 0.5);
+    border: 1px solid rgba(var(--z800), 0.6);
+    border-radius: 20px;
+    box-shadow: none;
+}
+:root:not([data-theme="light"]) .search-section { border-left: 1px solid rgba(var(--z800),0.6); }
+
+:root:not([data-theme="light"]) .area-card { padding: 0; overflow: hidden; }
+:root:not([data-theme="light"]) .area-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(var(--z800), 0.6);
+    color: var(--nava-cyan);
+    letter-spacing: 2px; font-size: 11px; padding: 16px 12px;
+}
+:root:not([data-theme="light"]) .area-list { background: transparent; padding: 6px; }
+:root:not([data-theme="light"]) .area-list li {
+    border-bottom: 1px solid rgba(var(--z800), 0.5);
+    padding: 12px 14px; border-radius: 14px; transition: background .25s;
+}
+:root:not([data-theme="light"]) .area-list li:last-child { border-bottom: none; }
+:root:not([data-theme="light"]) .area-list li:hover  { background: rgba(var(--z800), 0.4); }
+:root:not([data-theme="light"]) .area-list li:active { background: rgba(var(--z800), 0.6); }
+:root:not([data-theme="light"]) .area-list.drag-over {
+    background: rgba(34,211,238,0.06);
+    border: 1px dashed rgba(34,211,238,0.4); border-radius: 16px;
+}
+:root:not([data-theme="light"]) .status-list li { border-bottom: 1px solid rgba(var(--z800), 0.5); }
+
+/* ---------- CAMPOS ---------- */
+:root:not([data-theme="light"]) select,
+:root:not([data-theme="light"]) .input-dark,
+:root:not([data-theme="light"]) input[type="text"],
+:root:not([data-theme="light"]) input[type="number"],
+:root:not([data-theme="light"]) input[type="password"],
+:root:not([data-theme="light"]) input[type="time"],
+:root:not([data-theme="light"]) input[type="date"] {
+    background: #09090b !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 14px;
+    transition: border-color .25s, box-shadow .25s;
+}
+:root:not([data-theme="light"]) select:focus,
+:root:not([data-theme="light"]) .input-dark:focus,
+:root:not([data-theme="light"]) input:focus {
+    border-color: rgba(34,211,238,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(34,211,238,0.12);
+}
+:root:not([data-theme="light"]) select option { background: #18181b; }
+
+/* ---------- BOTONES (pastilla + resorte) ---------- */
+:root:not([data-theme="light"]) .btn-menu,
+:root:not([data-theme="light"]) .btn-outline,
+:root:not([data-theme="light"]) .btn-cancel,
+:root:not([data-theme="light"]) .btn-success,
+:root:not([data-theme="light"]) .btn-danger,
+:root:not([data-theme="light"]) .btn-volver-web,
+:root:not([data-theme="light"]) .btn-primary,
+:root:not([data-theme="light"]) .btn-export {
+    border-radius: 999px;
+    transition: transform .4s cubic-bezier(0.175,0.885,0.32,1.275), background .25s, border-color .25s, box-shadow .25s;
+}
+:root:not([data-theme="light"]) .btn-menu:hover,
+:root:not([data-theme="light"]) .btn-outline:hover,
+:root:not([data-theme="light"]) .btn-cancel:hover,
+:root:not([data-theme="light"]) .btn-primary:hover,
+:root:not([data-theme="light"]) .btn-export:hover { transform: scale(1.02); }
+:root:not([data-theme="light"]) .btn-menu:active,
+:root:not([data-theme="light"]) .btn-outline:active,
+:root:not([data-theme="light"]) .btn-cancel:active,
+:root:not([data-theme="light"]) .btn-primary:active { transform: scale(0.97); }
+
+:root:not([data-theme="light"]) .btn-menu,
+:root:not([data-theme="light"]) .btn-outline,
+:root:not([data-theme="light"]) .btn-cancel,
+:root:not([data-theme="light"]) .btn-volver-web {
+    background: rgba(var(--z800), 0.5);
+    border: 1px solid rgba(63,63,70,0.5);
+    color: var(--text-main);
+    box-shadow: none;
+}
+:root:not([data-theme="light"]) .btn-menu:hover,
+:root:not([data-theme="light"]) .btn-outline:hover,
+:root:not([data-theme="light"]) .btn-cancel:hover,
+:root:not([data-theme="light"]) .btn-volver-web:hover {
+    background: rgba(var(--z800), 0.9);
+    border-color: rgba(34,211,238,0.35);
+    color: var(--nava-cyan);
+    box-shadow: none;
+}
+:root:not([data-theme="light"]) .btn-admin-trigger { color: var(--nava-cyan); }
+
+:root:not([data-theme="light"]) .btn-primary {
+    background: linear-gradient(90deg, #06b6d4 0%, #2563eb 100%);
+    color: #ffffff; border: none; font-weight: 600;
+    box-shadow: 0 10px 24px -8px rgba(34,211,238,0.5);
+}
+:root:not([data-theme="light"]) .btn-primary:hover { box-shadow: 0 14px 30px -8px rgba(34,211,238,0.65); }
+:root:not([data-theme="light"]) .btn-export {
+    background: linear-gradient(90deg, #06b6d4 0%, #2563eb 100%);
+    color: #fff; border: none; box-shadow: 0 10px 24px -8px rgba(34,211,238,0.45);
+}
+:root:not([data-theme="light"]) .btn-danger  { background: rgba(251,113,133,0.10); border: 1px solid rgba(251,113,133,0.30); color: var(--danger); }
+:root:not([data-theme="light"]) .btn-danger:hover { background: rgba(251,113,133,0.18); }
+:root:not([data-theme="light"]) .btn-success { background: rgba(74,222,128,0.10); border: 1px solid rgba(74,222,128,0.30); color: var(--success); }
+:root:not([data-theme="light"]) .btn-success:hover { background: rgba(74,222,128,0.18); }
+
+:root:not([data-theme="light"]) .btn-delete-small,
+:root:not([data-theme="light"]) .btn-edit-small {
+    background: rgba(var(--z800), 0.6); border: 1px solid rgba(63,63,70,0.4);
+    border-radius: 10px; box-shadow: none; transition: .25s;
+}
+:root:not([data-theme="light"]) .btn-delete-small:hover { background: rgba(251,113,133,0.18); border-color: rgba(251,113,133,0.4); color: var(--danger); box-shadow: none; }
+:root:not([data-theme="light"]) .btn-edit-small:hover   { background: rgba(250,204,21,0.18);  border-color: rgba(250,204,21,0.4);  color: var(--warning); box-shadow: none; }
+
+:root:not([data-theme="light"]) .btn-tema {
+    background: #18181b; border: 1px solid var(--border-color); color: var(--nava-cyan);
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.9);
+    transition: transform .4s cubic-bezier(0.175,0.885,0.32,1.275), border-color .25s;
+}
+:root:not([data-theme="light"]) .btn-tema:hover { border-color: rgba(34,211,238,0.4); transform: scale(1.06); box-shadow: 0 8px 20px -8px rgba(0,0,0,0.9); }
+
+/* ---------- ETIQUETAS Y TABLAS ---------- */
+:root:not([data-theme="light"]) .badge-status,
+:root:not([data-theme="light"]) .status-count {
+    background: rgba(var(--z800), 0.6); border: 1px solid rgba(63,63,70,0.4);
+    border-radius: 999px; box-shadow: none;
+}
+:root:not([data-theme="light"]) .time-badge {
+    background: rgba(250,204,21,0.10); border: 1px solid rgba(250,204,21,0.30);
+    color: var(--warning); border-radius: 999px; box-shadow: none;
+}
+:root:not([data-theme="light"]) .time-badge.excedido {
+    background: rgba(251,113,133,0.12); border-color: rgba(251,113,133,0.35); color: var(--danger); box-shadow: none;
+}
+:root:not([data-theme="light"]) table th { background: #09090b; border-bottom: 1px solid var(--border-color); color: var(--nava-cyan); }
+:root:not([data-theme="light"]) table td { border-bottom: 1px solid rgba(var(--z800), 0.5); }
+:root:not([data-theme="light"]) tr:hover { background: rgba(var(--z800), 0.35); }
+
+/* ---------- PANTALLA DE INICIO, MENU Y MODALES ---------- */
+:root:not([data-theme="light"]) .left-side { background: rgba(var(--z900), 0.3); border-right: 1px solid rgba(var(--z800), 0.6); }
+:root:not([data-theme="light"]) .logo-gigante,
+:root:not([data-theme="light"]) .logo { border-radius: 28px; filter: drop-shadow(0 0 35px rgba(34,211,238,0.25)); box-shadow: none; }
+:root:not([data-theme="light"]) .welcome-title,
+:root:not([data-theme="light"]) .section-head h2 { text-shadow: none; }
+:root:not([data-theme="light"]) .welcome-eyebrow {
+    background: rgba(34,211,238,0.10); border: 1px solid rgba(34,211,238,0.20);
+    color: var(--nava-cyan); box-shadow: none;
+}
+:root:not([data-theme="light"]) .welcome-empresa {
+    background: linear-gradient(90deg, #22d3ee, #3b82f6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+:root:not([data-theme="light"]) .modal-overlay { background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
+:root:not([data-theme="light"]) .modal-header { border-bottom: 1px solid rgba(var(--z800), 0.6); }
+
+:root:not([data-theme="light"]) .admin-sidebar { background: rgba(var(--z900), 0.5); border-right: 1px solid rgba(var(--z800), 0.6); }
+:root:not([data-theme="light"]) .nav-btn { border: 1px solid transparent; border-radius: 999px; }
+:root:not([data-theme="light"]) .nav-btn:hover,
+:root:not([data-theme="light"]) .nav-btn.active {
+    background: rgba(34,211,238,0.10); color: var(--nava-cyan);
+    border-color: rgba(34,211,238,0.25); box-shadow: none;
+}
+
+/* Paneles con fondo oscuro escrito directo en el HTML */
+:root:not([data-theme="light"]) #info-registros,
+:root:not([data-theme="light"]) #info-empleado,
+:root:not([data-theme="light"]) #view-asistencia div[style*="rgba(0,0,0,0.4)"],
+:root:not([data-theme="light"]) #view-dashboard-empleado div[style*="rgba(0,0,0,0.4)"] {
+    background: rgba(var(--z900), 0.6) !important;
+    border: 1px solid rgba(var(--z800), 0.6);
+    border-radius: 18px;
+    box-shadow: none;
+}

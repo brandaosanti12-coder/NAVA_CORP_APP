@@ -23,6 +23,7 @@
     b.setAttribute('aria-label', b.getAttribute('title'));
   }
 
+  function aplicar(tema) {
     document.documentElement.setAttribute('data-theme', tema);
     pintarBoton(tema);
   }

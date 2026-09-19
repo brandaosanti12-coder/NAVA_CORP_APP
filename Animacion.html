@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAVA CORP</title>
+
+  <script>
+    /* Se marca el paso por la animación. index.html consume esta marca
+       al leerla, y además se vuelve con ?n=1 como segunda barrera. */
+    try { sessionStorage.setItem('nava_de_intro', '1'); } catch (e) {}
+    /* Se aplica el tema guardado antes de pintar, para que no parpadee */
+    try {
+      document.documentElement.setAttribute('data-theme',
+        localStorage.getItem('nava_tema') === 'light' ? 'light' : 'dark');
+    } catch (e) {}
+  </script>
+
+  <style>
+    :root { --fondo:#09090b; --texto:#fafafa; --tenue:#52525b; }
+    :root[data-theme="light"] { --fondo:#ffffff; --texto:#18181b; --tenue:#a1a1aa; }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; }
+    body {
+      background: var(--fondo);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      transition: opacity .6s ease;
+    }
+    body.saliendo { opacity: 0; }
+
+    .marco { width:100%; max-width:32rem; padding:2rem; }
+    .marco svg { width:100%; height:auto; display:block; }
+
+    .pista {
+      margin-top: 2rem; font-size: 11px; letter-spacing: .3em;
+      text-transform: uppercase; color: var(--tenue);
+      opacity: 0; animation: aparecerAbajo .8s ease forwards; animation-delay: 1.1s;
+    }
+
+    /* =========================================================
+       1. FISICAS DE ENSAMBLE (las piezas llegan volando)
+       ========================================================= */
+    .pieza { transform-origin: center; opacity: 0; }
+
+    .pilar-izq { animation: ensamblarIzq  .8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .pilar-der { animation: ensamblarDer  .8s cubic-bezier(0.34,1.56,0.64,1) forwards; animation-delay: .1s; }
+    .diagonal  { animation: ensamblarDiag .8s cubic-bezier(0.34,1.56,0.64,1) forwards; animation-delay: .25s; }
+
+    /* Los textos entran cuando la N ya esta armada */
+    .texto-ava  { opacity:0; animation: aparecerDerecha .8s cubic-bezier(0.34,1.56,0.64,1) forwards; animation-delay: .5s; }
+    .texto-corp { opacity:0; animation: aparecerAbajo   .8s cubic-bezier(0.34,1.56,0.64,1) forwards; animation-delay: .7s; }
+
+    /* =========================================================
+       2. ILUMINACION SOLO EN LOS BORDES (neon sutil)
+       ========================================================= */
+    .n-glow { animation: neonBorde 3s ease-in-out infinite alternate; }
+
+    /* ============ TRAYECTORIAS ============ */
+    @keyframes ensamblarIzq  { 0%{transform:translate(-50px,-50px) scale(.5);opacity:0;} 100%{transform:translate(0,0) scale(1);opacity:1;} }
+    @keyframes ensamblarDer  { 0%{transform:translate(50px,50px) scale(.5);opacity:0;}   100%{transform:translate(0,0) scale(1);opacity:1;} }
+    @keyframes ensamblarDiag { 0%{transform:translateY(-80px) scale(.5);opacity:0;}      100%{transform:translateY(0) scale(1);opacity:1;} }
+    @keyframes aparecerDerecha { 0%{transform:translateX(30px);opacity:0;filter:blur(3px);} 100%{transform:translateX(0);opacity:1;filter:blur(0);} }
+    @keyframes aparecerAbajo   { 0%{transform:translateY(20px);opacity:0;filter:blur(3px);} 100%{transform:translateY(0);opacity:1;filter:blur(0);} }
+    @keyframes neonBorde { 0%{filter:drop-shadow(0 0 1px rgba(34,211,238,.4));} 100%{filter:drop-shadow(0 0 6px rgba(34,211,238,1));} }
+
+    /* A quien pide menos movimiento se le quita solo el pulso en bucle */
+    @media (prefers-reduced-motion: reduce) { .n-glow { animation: none; } }
+  </style>
+</head>
+<body onclick="entrar()" title="Clic para entrar">
+
+  <div class="marco">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" role="img" aria-label="NAVA CORP">
+      <defs>
+        <linearGradient id="navaCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#22d3ee" />
+          <stop offset="100%" stop-color="#0284c7" />
+        </linearGradient>
+      </defs>
+
+      <!-- LA "N" -->
+      <g class="n-glow" fill="url(#navaCyan)">
+        <rect class="pieza pilar-izq" x="20" y="20" width="16" height="70" rx="2" />
+        <rect class="pieza pilar-der" x="74" y="20" width="16" height="70" rx="2" />
+        <polygon class="pieza diagonal" points="20,20 44,20 90,90 66,90" />
+      </g>
+
+      <!-- AVA AL LADO DE LA N -->
+      <text class="texto-ava" x="105" y="85" font-family="Inter, system-ui, sans-serif" font-size="64" font-weight="900" fill="var(--texto)" letter-spacing="4">AVA</text>
+
+      <!-- CORP DEBAJO DE AVA -->
+      <text class="texto-corp" x="110" y="125" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="600" fill="#22d3ee" letter-spacing="14">CORP</text>
+    </svg>
+  </div>
+
+  <p class="pista">Soluciones digitales</p>
+
+  <script>
+    /* Cuando termina la animación entra al sitio.
+       Tiempos: 0,25 s de retardo + 0,8 s de la última pieza + 1,2 s en pantalla. */
+    var entrado = false;
+
+    function entrar() {
+      if (entrado) return;
+      entrado = true;
+      try { sessionStorage.setItem('nava_de_intro', '1'); } catch (e) {}
+      document.body.classList.add('saliendo');
+      setTimeout(function () { window.location.replace('index.html?n=1'); }, 450);
+    }
+
+    setTimeout(entrar, 2700);
+    document.addEventListener('keydown', entrar, { once: true });
+  </script>
+</body>
+</html>

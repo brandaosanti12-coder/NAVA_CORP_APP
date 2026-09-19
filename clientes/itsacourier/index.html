@@ -9,6 +9,10 @@
 <link rel="stylesheet" href="css/style.css">
 <script src="js/tema.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<!-- Librería para generar el QR (Admin) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Librería para escanear el QR (Cámara del Empleado) -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 /* ===== BIENVENIDA ITSACOURIER + RETORNO A LA WEB (NAVA CORP) ===== */
 .btn-volver-web{position:absolute;top:22px;right:26px;z-index:50;display:inline-flex;align-items:center;gap:8px;
@@ -248,17 +252,34 @@
             
             <!-- Contenido Principal -->
             <main class="admin-main">
-                <header class="admin-header glass-card" style="padding: 15px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px;">
+                <header class="admin-header glass-card" style="padding: 15px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px; flex-wrap: wrap; gap: 15px;">
                     <h2 id="admin-module-title" style="color: var(--nava-cyan); font-size: 18px; margin: 0;"><i class="fas fa-utensils"></i> Gestión de Almuerzos</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" onclick="window.open('generador-tokens.html', '_blank')" style="margin: 0;" title="Abrir Generador de Tokens">
+    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        
+                        <!-- ================= NUEVO: SELECTOR DE MODO DE ALMUERZO ================= -->
+                        <div class="form-group" style="margin: 0; min-width: 150px;" title="Seleccione el método de validación para los empleados">
+                            <select id="selector-modo-almuerzo" onchange="cambiarModoAlmuerzoAdmin()" class="input-dark" style="padding: 10px; font-weight: bold; border-color: var(--nava-cyan); background: rgba(0, 229, 255, 0.05);">
+                                <option value="TOKEN">Modo: PANTALLA TOKENS</option>
+                                <option value="QR">Modo: CÓDIGO QR (Cámara)</option>
+                            </select>
+                        </div>
+
+                        <!-- Botón Clásico de Tokens (Se oculta si elige QR) -->
+                        <button id="btn-header-token" class="btn-primary" onclick="window.open('generador-tokens.html', '_blank')" style="margin: 0;" title="Abrir Pantalla de Tokens">
                             <i class="fas fa-stopwatch"></i> Generar Token
                         </button>
+
+                        <!-- Botón Nuevo de QR (Se oculta si elige Tokens) -->
+                        <button id="btn-header-qr" class="btn-primary" onclick="abrirModalImprimirQR()" style="margin: 0; display: none; background: linear-gradient(90deg, #8b5cf6 0%, #6d28d9 100%);" title="Mostrar e Imprimir el QR del Día">
+                            <i class="fas fa-qrcode"></i> Imprimir QR de Hoy
+                        </button>
+        
                         <button class="btn-cancel" onclick="abrirModalCambiarPassword()" style="display: flex; align-items: center; gap: 8px; margin: 0;" title="Cambiar Contraseña">
                             <i class="fas fa-key" style="color: var(--warning);"></i> Cambiar Clave
                         </button>
                     </div>
-                </header>
+</header>
 
                 <!-- TAB 1: ALMUERZOS -->
                 <div id="tab-almuerzos" class="admin-tab active glass-card" style="padding: 25px; border-radius: 12px;">
@@ -500,6 +521,41 @@
                 <tbody id="tabla-correccion-bio"><tr><td colspan="5" style="text-align:center;">Seleccione una fecha para buscar registros</td></tr></tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: GENERAR E IMPRIMIR QR (ADMIN) ================= -->
+<div id="modal-imprimir-qr" class="modal-overlay" style="display: none; z-index: 1300;">
+    <div class="modal-caja glass-card" style="max-width: 400px; width: 95%;">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3 style="color: var(--nava-cyan); margin: 0;"><i class="fas fa-qrcode"></i> QR del Día</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-imprimir-qr')">×</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 13px; margin: 15px 0; line-height: 1.5;">Este código es válido <b>únicamente para hoy</b>:<br><strong id="lbl-fecha-qr" style="color: var(--text-main); font-size: 16px;"></strong></p>
+        
+        <!-- Aquí se dibuja el gráfico del QR -->
+        <div id="contenedor-qr-imprimir" style="background: white; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-cancel" style="flex: 1;" onclick="cerrarModal('modal-imprimir-qr')">Cancelar</button>
+            <button class="btn-primary" style="flex: 1; background: linear-gradient(90deg, #10b981 0%, #059669 100%);" onclick="ejecutarImpresionQR()"><i class="fas fa-print"></i> Imprimir Papel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: ESCÁNER DE CÁMARA (EMPLEADO) ================= -->
+<div id="modal-escaner-qr" class="modal-overlay" style="display: none; z-index: 1300;">
+    <div class="modal-caja glass-card" style="max-width: 450px; width: 95%;">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3 id="titulo-escaner-qr" style="color: var(--warning); margin: 0;"><i class="fas fa-camera"></i> Escanear Código QR</h3>
+            <button class="close-btn" onclick="cerrarEscanerQR()">×</button>
+        </div>
+        <p id="desc-escaner-qr" style="color: var(--text-muted); font-size: 13px; margin: 15px 0;">Apunta con tu cámara al código QR impreso en la oficina para registrar tu <b id="lbl-tipo-escaner"></b>.</p>
+        
+        <!-- Cuadro negro donde se verá la cámara -->
+        <div id="lector-camara-qr" style="width: 100%; min-height: 250px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-color); margin-bottom: 20px; background: #000;"></div>
+        
+        <button class="btn-cancel" style="width: 100%; border-color: var(--danger); color: var(--danger);" onclick="cerrarEscanerQR()"><i class="fas fa-times"></i> Cancelar y Apagar Cámara</button>
     </div>
 </div>
 

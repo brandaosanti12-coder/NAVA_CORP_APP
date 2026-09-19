@@ -1,413 +1,445 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NAVA CORP · Desarrollo de Páginas y Sistemas Web</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root{
-  --nava-carbon:#0b0f19; --nava-steel:#1c2331; --nava-silver:#a0abbc;
-  --nava-electric-blue:#0056e0; --nava-electric-light:#00a2ff; --nava-cyan:#00e5ff;
-  --success:#00e676; --warning:#ffea00; --danger:#ff1744;
-  --text-main:#fff; --text-muted:var(--nava-silver); --border-color:#2a3b5c;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-html{scroll-behavior:smooth;}
-body{background:radial-gradient(circle at top right,#112240 0%,var(--nava-carbon) 70%);color:var(--text-main);min-height:100vh;overflow-x:hidden;}
-h1,h2,h3,h4,button,input{font-family:'Montserrat',sans-serif;}
-a{color:inherit;text-decoration:none;}
-::-webkit-scrollbar{width:8px;}
-::-webkit-scrollbar-track{background:rgba(0,0,0,.3);}
-::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:var(--nava-cyan);}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAVA CORP · Soluciones Digitales</title>
 
-/* ===== HEADER ===== */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:900;display:flex;align-items:center;justify-content:space-between;
-  padding:14px 32px;background:rgba(11,15,25,.75);backdrop-filter:blur(12px);border-bottom:1px solid rgba(42,59,92,.7);}
-.brand{display:flex;align-items:center;gap:12px;}
-.brand img{height:38px;filter:drop-shadow(0 0 10px rgba(0,162,255,.5));}
-.brand span{font-family:'Montserrat';font-weight:800;letter-spacing:2px;font-size:15px;}
-.brand span small{color:var(--nava-cyan);}
-.nav-links{display:flex;gap:26px;align-items:center;}
-.nav-links a{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);transition:.25s;}
-.nav-links a:hover{color:var(--nava-cyan);}
-.btn-cliente{padding:11px 20px;border-radius:10px;background:rgba(28,35,49,.6);border:1px solid var(--nava-cyan);color:var(--nava-cyan);
-  cursor:pointer;font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:1px;display:flex;align-items:center;gap:9px;transition:.3s;white-space:nowrap;}
-.btn-cliente:hover{background:rgba(0,229,255,.12);box-shadow:0 0 18px rgba(0,229,255,.45);transform:translateY(-2px);}
+  <script>
+    /* Antes de mostrar el sitio se pasa por la animación del logo.
+       Hay DOS barreras para que nunca se produzca un ida y vuelta sin fin:
+         1) el parámetro ?n=1 con el que vuelve la animación
+         2) una marca en sessionStorage que se consume al leerla
+       Después se limpia la dirección, así al actualizar se vuelve a ver. */
+    (function () {
+      var vengoDeIntro = location.search.indexOf('n=1') !== -1;
 
-/* ===== HERO ===== */
-.hero{min-height:100vh;display:flex;align-items:center;gap:50px;padding:130px 40px 70px;max-width:1250px;margin:0 auto;flex-wrap:wrap;}
-.hero-text{flex:1;min-width:320px;}
-.tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--nava-cyan);border:1px solid var(--border-color);background:rgba(0,0,0,.35);padding:7px 14px;border-radius:20px;margin-bottom:22px;}
-.hero h1{font-size:3.2rem;line-height:1.1;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--nava-electric-light),var(--nava-cyan));-webkit-background-clip:text;background-clip:text;color:transparent;}
-.hero p{color:var(--text-muted);font-size:1.02rem;line-height:1.7;max-width:560px;margin-bottom:32px;}
-.hero-actions{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{background:linear-gradient(90deg,var(--nava-electric-blue) 0%,var(--nava-electric-light) 100%);color:#fff;border:none;
-  padding:15px 26px;border-radius:10px;cursor:pointer;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:1px;transition:.3s;display:flex;align-items:center;gap:10px;}
-.btn-primary:hover{box-shadow:0 8px 24px rgba(0,162,255,.55);transform:translateY(-2px);}
-.btn-outline{background:transparent;color:var(--nava-cyan);border:1px solid var(--nava-cyan);padding:15px 26px;border-radius:10px;
-  cursor:pointer;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:1px;transition:.3s;display:flex;align-items:center;gap:10px;}
-.btn-outline:hover{background:rgba(0,229,255,.1);box-shadow:0 0 18px rgba(0,229,255,.35);transform:translateY(-2px);}
-.btn-whatsapp{background:linear-gradient(90deg,#128c7e 0%,#25d366 100%);color:#fff;border:none;padding:15px 26px;border-radius:10px;
-  cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:1px;
-  transition:.3s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 15px rgba(37,211,102,.25);}
-.btn-whatsapp:hover{box-shadow:0 8px 24px rgba(37,211,102,.55);transform:translateY(-2px);}
-.btn-whatsapp i{font-size:18px;}
+      var marca = null;
+      try {
+        marca = sessionStorage.getItem('nava_de_intro');
+        sessionStorage.removeItem('nava_de_intro');
+      } catch (e) { /* sin sessionStorage basta con el parámetro */ }
 
-/* BOTON FLOTANTE WHATSAPP */
-.wa-float{position:fixed;right:24px;bottom:24px;z-index:950;width:58px;height:58px;border-radius:50%;
-  background:linear-gradient(145deg,#25d366,#128c7e);color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:28px;box-shadow:0 8px 25px rgba(37,211,102,.45);transition:.3s;animation:waPulse 2.5s infinite;}
-.wa-float:hover{transform:scale(1.1);box-shadow:0 10px 30px rgba(37,211,102,.7);}
-@keyframes waPulse{0%,100%{box-shadow:0 8px 25px rgba(37,211,102,.45);}50%{box-shadow:0 8px 32px rgba(37,211,102,.8);}}
+      if (vengoDeIntro || marca) {
+        if (vengoDeIntro && window.history && history.replaceState) {
+          history.replaceState(null, '', location.pathname);
+        }
+        return;
+      }
 
-.hero-visual{flex:1;min-width:300px;display:flex;justify-content:center;}
-.hero-visual img{width:100%;max-width:380px;filter:drop-shadow(0 0 40px rgba(0,162,255,.45));animation:float 6s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+      location.replace('Animacion.html');
+    })();
+  </script>
 
-/* ===== SECCIONES ===== */
-section.block{max-width:1250px;margin:0 auto;padding:80px 40px;}
-.section-head{text-align:center;margin-bottom:50px;}
-.section-head h2{font-size:2.1rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;text-shadow:0 0 14px rgba(0,162,255,.3);}
-.section-head p{color:var(--text-muted);max-width:620px;margin:0 auto;line-height:1.6;}
-.line{width:70px;height:3px;margin:18px auto 0;background:linear-gradient(90deg,var(--nava-electric-blue),var(--nava-cyan));border-radius:3px;}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-.glass-card{background:linear-gradient(145deg,rgba(28,35,49,.8) 0%,rgba(11,15,25,.9) 100%);border-radius:14px;
-  border:1px solid rgba(42,59,92,.8);box-shadow:0 15px 35px rgba(0,0,0,.5);backdrop-filter:blur(10px);}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;}
-.card{padding:30px 26px;transition:transform .3s,box-shadow .3s,border-color .3s;}
-.card:hover{transform:translateY(-7px);border-color:var(--nava-cyan);box-shadow:0 20px 40px rgba(0,0,0,.6),0 0 22px rgba(0,229,255,.15);}
-.card i.ico{font-size:26px;color:var(--nava-cyan);background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);
-  width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:14px;margin-bottom:18px;}
-.card h3{font-size:1.05rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.card p{color:var(--text-muted);font-size:.92rem;line-height:1.65;}
-.card ul{list-style:none;margin-top:14px;}
-.card ul li{color:var(--text-muted);font-size:.86rem;padding:5px 0 5px 20px;position:relative;}
-.card ul li::before{content:"\f058";font-family:"Font Awesome 6 Free";font-weight:900;color:var(--success);position:absolute;left:0;font-size:11px;top:7px;}
+  <script>
+    /* La paleta se define con variables CSS para que el modo claro
+       funcione sin duplicar clases en todo el HTML. */
+    /* Si el CDN de Tailwind no cargara (sin internet), no se rompe la pagina */
+    if (window.tailwind) tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            zinc: {
+              50:  'rgb(var(--z50)  / <alpha-value>)',
+              100: 'rgb(var(--z100) / <alpha-value>)',
+              200: 'rgb(var(--z200) / <alpha-value>)',
+              300: 'rgb(var(--z300) / <alpha-value>)',
+              400: 'rgb(var(--z400) / <alpha-value>)',
+              500: 'rgb(var(--z500) / <alpha-value>)',
+              600: 'rgb(var(--z600) / <alpha-value>)',
+              700: 'rgb(var(--z700) / <alpha-value>)',
+              800: 'rgb(var(--z800) / <alpha-value>)',
+              900: 'rgb(var(--z900) / <alpha-value>)',
+              950: 'rgb(var(--z950) / <alpha-value>)'
+            }
+          }
+        }
+      }
+    };
+  </script>
 
-/* PROCESO */
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;}
-.step{padding:26px 22px;text-align:center;}
-.step .num{font-family:'Montserrat';font-size:2.4rem;font-weight:800;color:transparent;-webkit-text-stroke:1.5px var(--nava-cyan);display:block;margin-bottom:10px;}
-.step h4{font-size:.95rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-.step p{color:var(--text-muted);font-size:.85rem;line-height:1.6;}
-
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:22px;text-align:center;}
-.stat{padding:28px 18px;border-top:4px solid var(--nava-electric-light);
-  background:linear-gradient(145deg,rgba(0,162,255,.05) 0%,rgba(0,0,0,.4) 100%);border-radius:16px;}
-.stat b{display:block;font-family:'Montserrat';font-size:2.2rem;color:var(--nava-cyan);font-weight:800;}
-.stat span{color:var(--text-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;}
-
-/* CTA */
-.cta{text-align:center;padding:60px 30px;border-top:4px solid var(--nava-cyan);}
-.cta h2{font-size:1.9rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;}
-.cta p{color:var(--text-muted);margin-bottom:28px;}
-.cta-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border-color);padding:34px 40px;text-align:center;color:var(--text-muted);font-size:11px;letter-spacing:1.5px;font-weight:600;}
-footer .cyan{color:var(--nava-cyan);}
-
-/* ===== MODAL PORTAL CORPORATIVO ===== */
-.modal-bg{position:fixed;inset:0;background:rgba(3,6,12,.85);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
-.modal-bg.open{display:flex;}
-.modal{width:100%;max-width:560px;padding:36px 32px 30px;position:relative;animation:pop .28s ease;max-height:90vh;overflow-y:auto;}
-@keyframes pop{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
-.modal .close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;}
-.modal .close:hover{color:var(--danger);}
-.modal-head{text-align:center;margin-bottom:26px;}
-.modal-head img{max-width:110px;margin:0 auto 14px;display:block;filter:drop-shadow(0 0 12px rgba(0,162,255,.45));}
-.modal-head h3{text-transform:uppercase;letter-spacing:2px;font-size:1.15rem;margin-bottom:8px;}
-.modal-head p{color:var(--text-muted);font-size:.85rem;}
-
-.proyectos{display:flex;flex-direction:column;gap:14px;}
-.proyecto{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:12px;border:1px solid var(--border-color);
-  background:rgba(0,0,0,.35);cursor:pointer;transition:.25s;text-align:left;width:100%;}
-.proyecto:hover{border-color:var(--nava-cyan);background:rgba(0,229,255,.06);transform:translateX(5px);box-shadow:0 0 18px rgba(0,229,255,.15);}
-.proyecto .av{min-width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;
-  background:linear-gradient(145deg,var(--nava-electric-blue),var(--nava-electric-light));color:#fff;box-shadow:0 0 15px rgba(0,162,255,.35);}
-.proyecto .info{flex:1;}
-.proyecto .info h4{font-size:.98rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;color:var(--text-main);}
-.proyecto .info p{color:var(--text-muted);font-size:.8rem;line-height:1.5;}
-.proyecto .estado{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;
-  background:rgba(0,230,118,.12);border:1px solid var(--success);color:var(--success);white-space:nowrap;}
-.proyecto .go{color:var(--nava-cyan);font-size:15px;}
-
-.proyecto.soon{cursor:not-allowed;opacity:.55;}
-.proyecto.soon:hover{transform:none;border-color:var(--border-color);background:rgba(0,0,0,.35);box-shadow:none;}
-.proyecto.soon .av{background:rgba(255,255,255,.07);color:var(--text-muted);box-shadow:none;}
-.proyecto.soon .estado{background:rgba(255,234,0,.1);border-color:var(--warning);color:var(--warning);}
-
-.hint{margin-top:22px;font-size:.72rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border-color);padding-top:14px;text-align:center;}
-
-@media(max-width:780px){
-  .nav-links{display:none;}
-  .topbar{padding:12px 16px;}
-  .btn-cliente{font-size:10px;padding:10px 12px;}
-  .hero{padding:110px 22px 50px;}
-  .hero h1{font-size:2.2rem;}
-  section.block{padding:60px 22px;}
-  .proyecto .estado{display:none;}
-}
-</style>
-</head>
-<body>
-
-<!-- ============ BARRA SUPERIOR ============ -->
-<header class="topbar">
-  <div class="brand">
-    <img src="assets/img/nava_corp.png" alt="NAVA CORP">
-    <span>NAVA <small>CORP</small></span>
-  </div>
-  <nav class="nav-links">
-    <a href="#servicios">Servicios</a>
-    <a href="#proceso">Proceso</a>
-    <a href="#sistemas">Sistemas</a>
-    <a href="#contacto">Contacto</a>
-  </nav>
-  <button class="btn-cliente" onclick="abrirPortal()">
-    <i class="fas fa-building-shield"></i> Portal Corporativo
-  </button>
-</header>
-
-<!-- ============ HERO ============ -->
-<div class="hero">
-  <div class="hero-text">
-    <div class="tag"><i class="fas fa-bolt"></i> Desarrollo Web &amp; Software Empresarial</div>
-    <h1>Creamos <em>páginas web</em> y sistemas que trabajan por tu empresa</h1>
-    <p>
-      En NAVA CORP diseñamos y programamos sitios web, portales corporativos y aplicaciones a la medida:
-      control de asistencia, registros con QR, paneles administrativos y dashboards en Power BI y Looker Studio.
-      Todo con diseño propio, hosting configurado y soporte continuo.
-    </p>
-    <div class="hero-actions">
-      <button class="btn-primary" onclick="abrirPortal()"><i class="fas fa-right-to-bracket"></i> Portal Corporativo</button>
-      <a class="btn-outline" href="#servicios"><i class="fas fa-layer-group"></i> Ver qué hacemos</a>
-    </div>
-  </div>
-  <div class="hero-visual">
-    <img src="assets/img/nava_corp.png" alt="NAVA CORP">
-  </div>
-</div>
-
-<!-- ============ SERVICIOS ============ -->
-<section class="block" id="servicios">
-  <div class="section-head">
-    <h2>Qué hacemos</h2>
-    <p>Soluciones digitales completas, desde la primera línea de diseño hasta la publicación en internet.</p>
-    <div class="line"></div>
-  </div>
-
-  <div class="grid">
-    <div class="card glass-card">
-      <i class="ico fas fa-globe"></i>
-      <h3>Páginas Web</h3>
-      <p>Sitios corporativos, landing pages y catálogos digitales con diseño moderno y adaptable a celular.</p>
-      <ul>
-        <li>Diseño responsive</li>
-        <li>Dominio y hosting</li>
-        <li>Optimización en buscadores</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-fingerprint"></i>
-      <h3>Control de Asistencia</h3>
-      <p>Marcación de entrada y salida por cédula, con geolocalización, cálculo de atrasos y horas extras.</p>
-      <ul>
-        <li>Registro por cédula</li>
-        <li>Ubicación GPS</li>
-        <li>Atrasos y horas extras</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-qrcode"></i>
-      <h3>Sistemas con QR</h3>
-      <p>Registros de salida y retorno mediante códigos QR: rápido, sin contacto y sin papeles.</p>
-      <ul>
-        <li>QR de salida y retorno</li>
-        <li>Control de tiempos</li>
-        <li>Historial automático</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-gauge-high"></i>
-      <h3>Paneles Administrativos</h3>
-      <p>Dashboards en vivo para ver el estado de tu personal y tus operaciones al instante.</p>
-      <ul>
-        <li>Tableros en tiempo real</li>
-        <li>Roles y permisos</li>
-        <li>Exportación a Excel</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-chart-pie"></i>
-      <h3>Dashboards Power BI &amp; Looker Studio</h3>
-      <p>Convertimos tus datos en tableros visuales e interactivos con Power BI y Google Looker Studio (Data Studio).</p>
-      <ul>
-        <li>Modelado y limpieza de datos</li>
-        <li>Indicadores (KPI) y gráficos dinámicos</li>
-        <li>Actualización automática y publicación</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-mobile-screen-button"></i>
-      <h3>Aplicaciones a Medida</h3>
-      <p>Desarrollamos el sistema que tu negocio necesita, conectado a la nube y accesible desde cualquier equipo.</p>
-      <ul>
-        <li>Base de datos en la nube</li>
-        <li>Acceso multiusuario</li>
-        <li>Respaldos automáticos</li>
-      </ul>
-    </div>
-
-    <div class="card glass-card">
-      <i class="ico fas fa-headset"></i>
-      <h3>Soporte y Mantenimiento</h3>
-      <p>Acompañamos tu sistema después de la entrega: mejoras, ajustes y asistencia técnica.</p>
-      <ul>
-        <li>Capacitación al personal</li>
-        <li>Actualizaciones</li>
-        <li>Soporte directo</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ============ PROCESO ============ -->
-<section class="block" id="proceso">
-  <div class="section-head">
-    <h2>Cómo trabajamos</h2>
-    <p>Un proceso claro, sin sorpresas y con entregas que puedes revisar en cada etapa.</p>
-    <div class="line"></div>
-  </div>
-  <div class="steps">
-    <div class="step glass-card"><span class="num">01</span><h4>Analizamos</h4><p>Entendemos tu operación y definimos qué debe resolver el sistema.</p></div>
-    <div class="step glass-card"><span class="num">02</span><h4>Diseñamos</h4><p>Creamos la imagen y la estructura de cada pantalla antes de programar.</p></div>
-    <div class="step glass-card"><span class="num">03</span><h4>Desarrollamos</h4><p>Programamos, conectamos la base de datos y probamos con datos reales.</p></div>
-    <div class="step glass-card"><span class="num">04</span><h4>Entregamos</h4><p>Publicamos, capacitamos a tu equipo y damos soporte continuo.</p></div>
-  </div>
-</section>
-
-<!-- ============ SISTEMAS / STATS ============ -->
-<section class="block" id="sistemas">
-  <div class="section-head">
-    <h2>Nuestro ecosistema</h2>
-    <p>Módulos ya funcionando en producción para el control diario del personal.</p>
-    <div class="line"></div>
-  </div>
-  <div class="stats">
-    <div class="stat"><b>100%</b><span>Web · Sin instalar</span></div>
-    <div class="stat"><b>24/7</b><span>Disponible en la nube</span></div>
-    <div class="stat"><b>GPS</b><span>Ubicación verificada</span></div>
-    <div class="stat"><b>XLS</b><span>Reportes exportables</span></div>
-  </div>
-</section>
-
-<!-- ============ CTA ============ -->
-<section class="block" id="contacto">
-  <div class="cta glass-card">
-    <h2>¿Listo para llevar tu empresa al siguiente nivel?</h2>
-    <p>Cuéntanos qué necesitas y te preparamos una propuesta a la medida.</p>
-    <div class="cta-actions">
-      <a class="btn-whatsapp" href="https://wa.me/593997572441?text=Hola%20NAVA%20CORP%2C%20quiero%20informaci%C3%B3n%20sobre%20sus%20servicios%20de%20desarrollo%20web." target="_blank" rel="noopener">
-        <i class="fab fa-whatsapp"></i> Escríbenos: +593 99 757 2441
-      </a>
-      <button class="btn-outline" onclick="abrirPortal()"><i class="fas fa-building-shield"></i> Portal Corporativo</button>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <p>DESIGNED BY <span class="cyan">NAVA CORP</span> · TODOS LOS DERECHOS RESERVADOS</p>
-</footer>
-
-<!-- ============ BOTON FLOTANTE WHATSAPP ============ -->
-<a class="wa-float"
-   href="https://wa.me/593997572441?text=Hola%20NAVA%20CORP%2C%20quiero%20informaci%C3%B3n%20sobre%20sus%20servicios%20de%20desarrollo%20web."
-   target="_blank" rel="noopener" title="Escríbenos por WhatsApp: +593 99 757 2441" aria-label="WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
-
-<!-- ============ MODAL: PORTAL CORPORATIVO (LISTADO DE PROYECTOS) ============ -->
-<div class="modal-bg" id="modal-portal" onclick="cerrarFuera(event)">
-  <div class="modal glass-card">
-    <button class="close" onclick="cerrarPortal()"><i class="fas fa-xmark"></i></button>
-
-    <div class="modal-head">
-      <img src="assets/img/nava_corp.png" alt="NAVA CORP">
-      <h3>Portal Corporativo</h3>
-      <p>Seleccione el proyecto al que desea ingresar.</p>
-    </div>
-
-    <div class="proyectos" id="lista-proyectos"><!-- se genera por JS --></div>
-
-    <div class="hint">
-      <i class="fas fa-circle-info"></i> ¿Su empresa aún no tiene sistema? Comuníquese con NAVA CORP para activarlo.
-    </div>
-  </div>
-</div>
-
-<script>
-/* ============================================================
-   PROYECTOS DEL PORTAL
-   Para agregar un nuevo cliente, copie un bloque y cambie los datos.
-   activo:false  ->  aparece como "En desarrollo" y no se puede abrir.
-   ============================================================ */
-const PROYECTOS = [
-  {
-    nombre: "ITSACOURIER",
-    descripcion: "Sistema de gestión y control de asistencia del personal.",
-    icono: "fa-truck-fast",
-    destino: "clientes/itsacourier/index.html",
-    activo: true
-  }
-  // ,{
-  //   nombre: "NUEVA EMPRESA",
-  //   descripcion: "Panel administrativo y reportes.",
-  //   icono: "fa-building",
-  //   destino: "superadmin.html",
-  //   activo: true
-  // }
-];
-
-const modal = document.getElementById('modal-portal');
-const lista = document.getElementById('lista-proyectos');
-
-function pintarProyectos(){
-  lista.innerHTML = '';
-  PROYECTOS.forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'proyecto' + (p.activo ? '' : ' soon');
-    item.innerHTML =
-      '<div class="av"><i class="fas ' + p.icono + '"></i></div>' +
-      '<div class="info"><h4>' + p.nombre + '</h4><p>' + p.descripcion + '</p></div>' +
-      '<span class="estado">' + (p.activo ? 'Activo' : 'En desarrollo') + '</span>' +
-      (p.activo ? '<i class="go fas fa-chevron-right"></i>' : '<i class="go fas fa-lock"></i>');
-    if(p.activo){
-      item.onclick = () => {
-        sessionStorage.setItem('nava_proyecto', p.nombre);
-        window.location.href = p.destino;
-      };
+  <style>
+    /* ===================== PALETA ===================== */
+    :root{
+      --z950: 9 9 11;      --z900: 24 24 27;   --z800: 39 39 42;
+      --z700: 63 63 70;    --z600: 82 82 91;   --z500: 113 113 122;
+      --z400: 161 161 170; --z300: 212 212 216;--z200: 228 228 231;
+      --z100: 244 244 245; --z50:  250 250 250;
     }
-    lista.appendChild(item);
-  });
-}
+    /* Modo claro: se invierte la escala, las clases no cambian */
+    :root[data-theme="light"]{
+      --z950: 255 255 255; --z900: 244 244 245;--z800: 224 224 228;
+      --z700: 205 205 212; --z600: 140 140 150;--z500: 100 100 110;
+      --z400: 82 82 91;    --z300: 63 63 70;   --z200: 39 39 42;
+      --z100: 30 30 34;    --z50:  18 18 21;
+    }
+    :root[data-theme="light"] body{ background:#ffffff; }
 
-function abrirPortal(){ pintarProyectos(); modal.classList.add('open'); }
-function cerrarPortal(){ modal.classList.remove('open'); }
-function cerrarFuera(e){ if(e.target === modal) cerrarPortal(); }
-document.addEventListener('keydown', e => { if(e.key === 'Escape') cerrarPortal(); });
-</script>
+    /* ============ FISICAS DE RESORTE ============ */
+    .spring-hover { transition: transform .4s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .spring-hover:hover { transform: scale(1.02); }
+    .spring-hover:active { transform: scale(0.97); }
 
+    /* ============ CAJON INFERIOR ============ */
+    .drawer-content { transition: transform .5s cubic-bezier(0.32,0.72,0,1); transform: translateY(100%); }
+    .drawer-open .drawer-content { transform: translateY(0); }
+    .drawer-backdrop { transition: opacity .4s ease; opacity: 0; pointer-events: none; }
+    .drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
+
+    @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+
+    /* Respeta a quien pide menos movimiento en su sistema */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-float { animation: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 font-sans antialiased overflow-x-hidden selection:bg-cyan-500/30">
+
+  </div>
+
+  <!-- ============ NAVEGACION ============ -->
+  <nav class="fixed top-0 inset-x-0 z-40 bg-zinc-950/70 backdrop-blur-md border-b border-zinc-800/50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3 font-semibold text-zinc-50 tracking-wide">
+        <div class="w-9 h-9 rounded-lg overflow-hidden border border-cyan-500/20 flex-shrink-0">
+          <img src="assets/img/nava_corp.png" alt="NAVA CORP" class="w-full h-full object-cover">
+        </div>
+        <span>NAVA <span class="text-cyan-400 font-medium">CORP</span></span>
+      </div>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+        <a href="#servicios" class="hover:text-cyan-400 transition-colors">Servicios</a>
+        <a href="#proceso" class="hover:text-cyan-400 transition-colors">Proceso</a>
+        <a href="#sistemas" class="hover:text-cyan-400 transition-colors">Sistemas</a>
+        <a href="#contacto" class="hover:text-cyan-400 transition-colors">Contacto</a>
+      </div>
+
+      <button onclick="toggleDrawer(true)" class="flex items-center gap-2 text-sm font-medium text-zinc-50 bg-zinc-800/50 hover:bg-zinc-800 px-4 md:px-5 py-2 rounded-full border border-zinc-700/50 transition-all spring-hover">
+        <i class="fas fa-shield-halved text-cyan-400"></i>
+        <span class="hidden sm:inline">Portal Corporativo</span>
+        <span class="sm:hidden">Portal</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ PORTADA ============ -->
+  <section class="pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 min-h-[90vh]">
+    <div class="flex-1 space-y-8 text-center lg:text-left">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium uppercase tracking-wider">
+        <i class="fas fa-bolt"></i> Desarrollo Web &amp; Software
+      </div>
+
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-zinc-50 leading-tight">
+        Creamos <em class="not-italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">páginas web</em> y sistemas que trabajan por tu empresa
+      </h1>
+
+      <p class="text-lg text-zinc-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+        En NAVA CORP diseñamos y programamos sitios web, portales corporativos y aplicaciones a la medida:
+        control de asistencia, registros con tokens dinámicos, paneles administrativos y dashboards en Power BI
+        y Looker Studio. Todo con diseño propio, hosting configurado y soporte continuo.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+        <button onclick="toggleDrawer(true)" class="spring-hover w-full sm:w-auto px-6 py-3.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+          Portal Corporativo <i class="fas fa-arrow-right"></i>
+        </button>
+        <a href="#servicios" class="spring-hover w-full sm:w-auto px-6 py-3.5 rounded-full bg-transparent border border-zinc-700 text-zinc-300 font-medium flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors">
+          <i class="fas fa-layer-group"></i> Ver qué hacemos
+        </a>
+      </div>
+    </div>
+
+    <!-- ===== LOGO DE LA EMPRESA ===== -->
+    <div class="flex-1 w-full max-w-md animate-float">
+      <img src="assets/img/nava_corp.png" alt="NAVA CORP"
+           class="w-full h-auto rounded-3xl drop-shadow-[0_0_45px_rgba(34,211,238,0.35)]">
+    </div>
+  </section>
+
+  <!-- ============ SERVICIOS ============ -->
+  <section id="servicios" class="py-24 px-6 max-w-7xl mx-auto border-t border-zinc-900">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl font-semibold text-zinc-50 mb-4 tracking-tight">Qué hacemos</h2>
+      <p class="text-zinc-400 max-w-2xl mx-auto">Soluciones digitales completas, desde la primera línea de diseño hasta la publicación en internet.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-globe text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Páginas Web</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Sitios corporativos, landing pages y catálogos digitales con diseño moderno y adaptable a celular.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Diseño responsive</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Dominio y hosting</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Optimización SEO</li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-fingerprint text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Control de Asistencia</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Marcación de entrada y salida por cédula, con geolocalización, cálculo de atrasos y horas extras.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Registro por cédula</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Ubicación GPS</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Atrasos y horas extras</li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-shield-halved text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Sistemas Dinámicos</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Registros de salida y retorno mediante tokens dinámicos: rápido, seguro y sin papeles.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Tokens de un solo uso</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Control de tiempos en vivo</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Historial automático</li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-gauge-high text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Paneles Administrativos</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Dashboards en vivo para ver el estado de tu personal y tus operaciones al instante.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Tableros en tiempo real</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Roles y permisos</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Exportación a Excel</li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-chart-pie text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Power BI &amp; Looker Studio</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Convertimos tus datos en tableros visuales e interactivos con Power BI y Google Looker Studio.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Modelado y limpieza de datos</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Indicadores y gráficos dinámicos</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Actualización automática</li>
+        </ul>
+      </div>
+
+      <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-8 flex flex-col hover:bg-zinc-800/40 hover:border-cyan-500/30 transition-all duration-300 transform hover:-translate-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-cyan-400 mb-6 shadow-inner"><i class="fas fa-headset text-2xl"></i></div>
+        <h3 class="font-semibold text-zinc-100 mb-3 uppercase text-sm tracking-wider">Soporte y Mantenimiento</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed mb-6 flex-1">Acompañamos tu sistema después de la entrega: mejoras, ajustes y asistencia técnica.</p>
+        <ul class="space-y-3 mt-auto pt-6 border-t border-zinc-800/50">
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Capacitación al personal</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Actualizaciones</li>
+          <li class="flex items-start gap-3 text-sm text-zinc-300"><i class="fas fa-circle-check text-cyan-500 mt-0.5"></i> Soporte directo</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ PROCESO ============ -->
+  <section id="proceso" class="py-24 px-6 max-w-7xl mx-auto border-t border-zinc-900">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl font-semibold text-zinc-50 mb-4 tracking-tight">Cómo trabajamos</h2>
+      <p class="text-zinc-400 max-w-2xl mx-auto">Un proceso claro, sin sorpresas y con entregas que puedes revisar en cada etapa.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="spring-hover bg-zinc-900/30 p-8 rounded-3xl border border-zinc-800/50 text-center relative overflow-hidden group">
+        <span class="text-6xl font-bold text-zinc-800/50 absolute -top-4 -right-2 group-hover:text-cyan-500/20 transition-colors">01</span>
+        <h4 class="font-semibold text-zinc-100 mb-3 relative z-10 uppercase tracking-widest text-sm">Analizamos</h4>
+        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Entendemos tu operación y definimos qué debe resolver el sistema.</p>
+      </div>
+      <div class="spring-hover bg-zinc-900/30 p-8 rounded-3xl border border-zinc-800/50 text-center relative overflow-hidden group">
+        <span class="text-6xl font-bold text-zinc-800/50 absolute -top-4 -right-2 group-hover:text-cyan-500/20 transition-colors">02</span>
+        <h4 class="font-semibold text-zinc-100 mb-3 relative z-10 uppercase tracking-widest text-sm">Diseñamos</h4>
+        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Creamos la imagen y la estructura de cada pantalla antes de programar.</p>
+      </div>
+      <div class="spring-hover bg-zinc-900/30 p-8 rounded-3xl border border-zinc-800/50 text-center relative overflow-hidden group">
+        <span class="text-6xl font-bold text-zinc-800/50 absolute -top-4 -right-2 group-hover:text-cyan-500/20 transition-colors">03</span>
+        <h4 class="font-semibold text-zinc-100 mb-3 relative z-10 uppercase tracking-widest text-sm">Desarrollamos</h4>
+        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Programamos, conectamos la base de datos y probamos con datos reales.</p>
+      </div>
+      <div class="spring-hover bg-zinc-900/30 p-8 rounded-3xl border border-zinc-800/50 text-center relative overflow-hidden group">
+        <span class="text-6xl font-bold text-zinc-800/50 absolute -top-4 -right-2 group-hover:text-cyan-500/20 transition-colors">04</span>
+        <h4 class="font-semibold text-zinc-100 mb-3 relative z-10 uppercase tracking-widest text-sm">Entregamos</h4>
+        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Publicamos, capacitamos a tu equipo y damos soporte continuo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SISTEMAS ============ -->
+  <section id="sistemas" class="py-24 px-6 max-w-7xl mx-auto border-t border-zinc-900">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl font-semibold text-zinc-50 mb-4 tracking-tight">Nuestro ecosistema</h2>
+      <p class="text-zinc-400 max-w-2xl mx-auto">Módulos ya funcionando en producción para el control diario de las empresas.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 text-center flex flex-col justify-center items-center h-40 shadow-inner">
+        <b class="text-4xl font-bold text-cyan-400 mb-2">100%</b>
+        <span class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Web · Sin instalar</span>
+      </div>
+      <div class="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 text-center flex flex-col justify-center items-center h-40 shadow-inner">
+        <b class="text-4xl font-bold text-cyan-400 mb-2">24/7</b>
+        <span class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">En la nube</span>
+      </div>
+      <div class="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 text-center flex flex-col justify-center items-center h-40 shadow-inner">
+        <b class="text-4xl font-bold text-cyan-400 mb-2">GPS</b>
+        <span class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Ubicación verificada</span>
+      </div>
+      <div class="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 text-center flex flex-col justify-center items-center h-40 shadow-inner">
+        <b class="text-4xl font-bold text-cyan-400 mb-2">XLS</b>
+        <span class="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Reportes exportables</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACTO ============ -->
+  <section id="contacto" class="py-24 px-6 max-w-4xl mx-auto text-center">
+    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 p-8 md:p-12 rounded-3xl shadow-2xl">
+      <h2 class="text-3xl font-semibold text-zinc-50 mb-4">¿Listo para llevar tu empresa al siguiente nivel?</h2>
+      <p class="text-zinc-400 mb-8 max-w-lg mx-auto">Cuéntanos qué necesitas y te preparamos una propuesta a la medida.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="https://wa.me/593997572441?text=Hola%20NAVA%20CORP%2C%20quiero%20informaci%C3%B3n%20sobre%20sus%20servicios%20de%20desarrollo%20web."
+           target="_blank" rel="noopener noreferrer"
+           class="spring-hover w-full sm:w-auto px-8 py-4 rounded-full bg-[#25d366] text-zinc-950 font-semibold inline-flex items-center justify-center gap-2">
+          <i class="fab fa-whatsapp text-xl"></i> +593 99 757 2441
+        </a>
+        <button onclick="toggleDrawer(true)" class="spring-hover w-full sm:w-auto px-8 py-4 rounded-full bg-zinc-50 text-zinc-950 font-medium inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+          <i class="fas fa-building-shield"></i> Portal Corporativo
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PIE ============ -->
+  <footer class="py-10 text-center text-xs font-semibold tracking-widest text-zinc-600 border-t border-zinc-900">
+    <p>DESIGNED BY <span class="text-cyan-500">NAVA CORP</span> · TODOS LOS DERECHOS RESERVADOS</p>
+  </footer>
+
+  <!-- ============ BOTON DE TEMA ============ -->
+  <button id="btn-tema" type="button" onclick="cambiarTema()"
+    class="spring-hover fixed bottom-6 left-6 z-40 w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 text-cyan-400 flex items-center justify-center text-lg shadow-lg hover:border-cyan-500/40 transition-colors"></button>
+
+  <!-- ============ WHATSAPP ============ -->
+  <a href="https://wa.me/593997572441?text=Hola%20NAVA%20CORP" target="_blank" rel="noopener noreferrer"
+     class="spring-hover fixed bottom-6 right-6 z-40 w-14 h-14 bg-[#25d366] text-zinc-950 rounded-full flex items-center justify-center shadow-lg shadow-[#25d366]/20 hover:bg-[#20bd5a] transition-colors text-3xl">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- ============ CAJON DEL PORTAL ============ -->
+  <div id="portal-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="drawer-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleDrawer(false)"></div>
+
+    <div class="drawer-content absolute bottom-0 left-0 right-0 bg-zinc-900 flex flex-col rounded-t-[32px] h-[75vh] border-t border-zinc-800">
+      <div class="p-4 flex-1 overflow-y-auto">
+        <div class="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-zinc-700/50 mb-8 mt-2"></div>
+
+        <div class="max-w-lg mx-auto w-full px-4">
+          <div class="text-center mb-10">
+            <div class="w-16 h-16 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <img src="assets/img/nava_corp.png" alt="NAVA CORP" class="w-full h-full object-cover">
+            </div>
+            <h3 class="text-2xl font-semibold text-zinc-50">Portal Corporativo</h3>
+            <p class="text-sm text-zinc-400 mt-2">Seleccione el proyecto al que desea ingresar.</p>
+          </div>
+
+          <button onclick="ingresarProyecto('ITSACOURIER','clientes/itsacourier/index.html')"
+            class="spring-hover w-full flex items-center gap-4 p-5 rounded-2xl bg-zinc-800/40 border border-zinc-700/50 hover:bg-zinc-800 transition-colors text-left group mb-4">
+            <div class="w-14 h-14 rounded-xl bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-cyan-500/50 transition-colors flex-shrink-0">
+              <i class="fas fa-truck-fast text-xl text-cyan-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <h4 class="font-semibold text-zinc-100 text-lg">ITSACOURIER</h4>
+                <span class="text-[10px] font-bold tracking-wider text-green-400 bg-green-400/10 px-2.5 py-1 rounded-full border border-green-400/20 flex-shrink-0">ACTIVO</span>
+              </div>
+              <p class="text-sm text-zinc-400">Sistema de gestión y control de asistencia.</p>
+            </div>
+            <i class="fas fa-chevron-right text-zinc-500 group-hover:text-cyan-400 transition-colors"></i>
+          </button>
+
+          <div class="w-full flex items-center gap-4 p-5 rounded-2xl bg-zinc-950/50 border border-zinc-800/30 opacity-50 cursor-not-allowed">
+            <div class="w-14 h-14 rounded-xl bg-zinc-900 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-lock text-xl text-zinc-600"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <h4 class="font-semibold text-zinc-500 text-lg">Próximo Sistema</h4>
+                <span class="text-[10px] font-bold tracking-wider text-yellow-500 bg-yellow-500/10 px-2.5 py-1 rounded-full border border-yellow-500/20 flex-shrink-0">PRONTO</span>
+              </div>
+              <p class="text-sm text-zinc-600">En etapa de desarrollo.</p>
+            </div>
+          </div>
+
+          <div class="mt-12 mb-6 p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 text-center">
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              <i class="fas fa-circle-info text-cyan-400"></i> ¿Su empresa aún no tiene sistema? Comuníquese con NAVA CORP para activarlo.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Cajón del portal ===== */
+    const drawerContainer = document.getElementById('portal-drawer');
+
+    function toggleDrawer(show) {
+      if (show) {
+        drawerContainer.classList.remove('hidden');
+        requestAnimationFrame(() => drawerContainer.classList.add('drawer-open'));
+      } else {
+        drawerContainer.classList.remove('drawer-open');
+        setTimeout(() => drawerContainer.classList.add('hidden'), 500);
+      }
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleDrawer(false); });
+
+    function ingresarProyecto(nombre, ruta) {
+      sessionStorage.setItem('nava_proyecto', nombre);
+      window.location.href = ruta;
+    }
+
+    /* ===== Modo claro / oscuro (misma preferencia que el sistema) ===== */
+    (function () {
+      var KEY = 'nava_tema';
+      function leer(){ try { return localStorage.getItem(KEY); } catch(e){ return null; } }
+      function guardar(t){ try { localStorage.setItem(KEY, t); } catch(e){} }
+
+      function pintarBoton(tema){
+        var b = document.getElementById('btn-tema');
+        if(!b) return;
+        var claro = tema === 'light';
+        b.textContent = claro ? '☽' : '☀';
+        b.setAttribute('title', claro ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+        b.setAttribute('aria-label', b.getAttribute('title'));
+      }
+
+      function aplicar(tema){
+        document.documentElement.setAttribute('data-theme', tema);
+        pintarBoton(tema);
+      }
+
+      aplicar(leer() === 'light' ? 'light' : 'dark');
+
+      window.cambiarTema = function(){
+        var actual = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        var nuevo  = actual === 'light' ? 'dark' : 'light';
+        guardar(nuevo);
+        aplicar(nuevo);
+      };
+
+      document.addEventListener('DOMContentLoaded', function(){
+        pintarBoton(document.documentElement.getAttribute('data-theme'));
+      });
+    })();
+  </script>
 </body>
 </html>
